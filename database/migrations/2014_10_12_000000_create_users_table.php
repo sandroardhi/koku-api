@@ -17,6 +17,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('tipe_user', ['user', 'ibu_kantin', 'admin'])->default('user');
+            $table->enum('status', ['active', 'pending'])->default('active');            
+            $table->string('profile_picture')->nullable()->default(null);
+            $table->string('nomor_hp')->nullable()->default(null);
+            $table->string('deskripsi')->nullable()->default(null);
             $table->rememberToken();
             $table->timestamps();
         });
