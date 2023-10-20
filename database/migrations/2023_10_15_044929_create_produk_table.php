@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('produk', function (Blueprint $table) {
             $table->id();
-            $table->string("foto");
+            $table->string("foto_produk");
             $table->string("nama_produk");
             $table->integer("harga");
             $table->integer("kuantitas");
+            $table->foreignId('kantin_id')->references('id')->on('kantin')->onDelete('cascade');
+            $table->foreignId('penjual_id')->references('id')->on('kantin')->onDelete('cascade');
             $table->timestamps();
         });
     }
