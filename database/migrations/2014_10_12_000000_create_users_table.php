@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('tipe_user', ['user', 'pengantar', 'ibu_kantin', 'admin'])->default('user');
+            $table->enum('tipe_user', ['user', 'pengantar', 'penjual', 'admin'])->default('user');
             $table->enum('status', ['active', 'pending'])->default('active');            
             $table->string('foto_profil')->nullable()->default(null);
             $table->string('nomor_hp')->nullable()->default(null);

@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('produk_id')->references('id')->on('produk')->onDelete('cascade');
             $table->foreignId('order_id')->references('id')->on('order')->onDelete('cascade');
-            $table->smallInteger("type", 6);
-            $table->smallInteger("status", 6);
+            $table->smallInteger("type");
+            $table->smallInteger("status");
             $table->timestamps();
         });
     }
