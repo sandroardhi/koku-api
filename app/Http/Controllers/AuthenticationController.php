@@ -12,12 +12,12 @@ class AuthenticationController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|string|email',
+            'email' => 'required|string',
             'password' => 'required',
             'device_name' => 'required|string',
         ]);
 
-        $user = User::whereEmail($request->email)->first();
+        $user = User::where('email', $request->email)->orWhere('name', $request->email)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => 'Alamat email atau password salah',
@@ -38,24 +38,12 @@ class AuthenticationController extends Controller
             'password' => 'required|confirmed'
         ]);
 
-        if(!$request->tipe_user) {
-            $tipe_user = "user";
-        } else {
-            $tipe_user = $request->tipe_user;
-        };
-
-        if(!$request->status) {
-            $status = "active";
-        } else {
-            $status = $request->status;
-        };
-
         return User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt(($request->password)),
-            'tipe_user' => $tipe_user,
-            'status' => $status
+            'tipe_user' => $request->tipe_user,
+            'status' => $request->status
         ]);
     }
     public function logout(Request $request)
