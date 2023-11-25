@@ -17,14 +17,15 @@ class Kantin extends Model
         'nama_kantin',
         "deskripsi",
         "penjual_id",
-        "produk_id"
+        "produk_id",
+        'foto_kantin',
     ];
 
-    public function user() : BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, "penjual_id");
     }
-    public function produks() : HasMany
+    public function produks(): HasMany
     {
         return $this->hasMany(Produk::class, "kantin_id");
     }

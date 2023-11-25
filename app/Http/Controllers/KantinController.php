@@ -26,25 +26,26 @@ class KantinController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'nama_kantin' => 'required|string|max:255|unique:kantin,nama_kantin',
             'foto_kantin' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg',
             'deskripsi' => 'nullable|string|max:750'
         ]);
-        if($request->foto_kantin){
+
+        if ($request->hasFile('foto_kantin')) {
             $foto_path = $request->file('foto_kantin')->store('foto_kantin', 'public');
         }
-        if($request->image){
+        if ($request->foto_kantin) {
             return Kantin::create([
-                ...$request->validated(),
-                'image' => $foto_path,
-                'user_id' => $request->user()->id,
+                'nama_kantin' => $request->nama_kantin,
+                'deskripsi' => $request->deskripsi,
+                'foto_kantin' => $foto_path,
+                'penjual_id' => $request->user()->id,
             ]);
-        }
-        else {
+        } else {
             return Kantin::create([
-                ...$request->validated(),
-                'user_id' => $request->user()->id,
+                ...$validatedData,
+                'penjual_id' => $request->user()->id,
             ]);
         }
     }
