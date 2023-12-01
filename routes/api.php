@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\KantinController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProdukController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,4 +30,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/profile', [AuthenticationController::class, 'profile'])->name('auth.profile');
     Route::get('/auth/logout', [AuthenticationController::class, 'logout'])->name('auth.logout');
     Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::get('/produk/{id}', [ProdukController::class, 'show_produk'])->name('produk.show_produk');
+    Route::post('/produk/{id}', [ProdukController::class, 'store'])->name('produk.store');
 });

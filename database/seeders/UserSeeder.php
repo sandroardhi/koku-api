@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Kantin;
 use App\Models\Produk;
+use App\Models\Kategori;
 
 class UserSeeder extends Seeder
 {
@@ -28,9 +29,16 @@ class UserSeeder extends Seeder
             'tipe_user' => 'penjual'
         ])->count(2)->create();
 
-        $penjual->each(function ($user) {
+        $namaKategori = ['Nasi', 'Snack', 'Mie', 'Minuman'];
+
+        $kategori = collect($namaKategori)->map(function ($name) {
+            return Kategori::factory()->create(['nama_kategori' => $name]);
+        });
+
+
+        $penjual->each(function ($user) use ($kategori) {
             $kantin = Kantin::factory()->create(['penjual_id' => $user->id]);
-            $produk = Produk::factory()->count(7)->create(['penjual_id' => $user->id, 'kantin_id' => $kantin->id]);
+            $produk = Produk::factory()->count(7)->create(['penjual_id' => $user->id, 'kantin_id' => $kantin->id, 'kategori_id' => $kategori->pluck('id')->random()]);
         });
 
         User::factory(10)->create();

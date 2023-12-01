@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer("kuantitas");
             $table->foreignId('kantin_id')->references('id')->on('kantin')->onDelete('cascade');
             $table->foreignId('penjual_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('kategori_id')->references('id')->on('kategori')->onDelete('cascade');
             $table->timestamps();
         });
     }

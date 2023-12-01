@@ -21,11 +21,15 @@ class Produk extends Model
         "kantin_id"
     ];
 
-    public function kantin() : BelongsTo
+    public function kantin(): BelongsTo
     {
         return $this->belongsTo(Kantin::class, "kantin_id");
     }
-    public function user() : BelongsTo
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, "penjual_id");
+    }
+    public function kategori(): BelongsTo
     {
         return $this->belongsTo(User::class, "penjual_id");
     }
