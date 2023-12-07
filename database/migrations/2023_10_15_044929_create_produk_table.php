@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string("nama_produk");
             $table->integer("harga");
             $table->integer("kuantitas");
+            $table->unsignedBigInteger('kantin_id');
+            $table->unsignedBigInteger('penjual_id');
+            $table->unsignedBigInteger('kategori_id');
             $table->foreignId('kantin_id')->references('id')->on('kantin')->onDelete('cascade');
             $table->foreignId('penjual_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreignId('kategori_id')->references('id')->on('kategori')->onDelete('cascade');

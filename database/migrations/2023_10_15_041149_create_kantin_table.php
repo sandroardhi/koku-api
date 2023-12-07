@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string("nama_kantin");
             $table->string("foto_kantin");
             $table->text("deskripsi");
+            $table->unsignedBigInteger('penjual_id');
             $table->foreignId('penjual_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
