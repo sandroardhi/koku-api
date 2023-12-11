@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('keranjang', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->unsignedBigInteger('pembeli_id');
             $table->foreignId('pembeli_id')->references('id')->on('users')->onDelete('cascade');
             $table->string("nama_pembeli");
             $table->string("kelas");

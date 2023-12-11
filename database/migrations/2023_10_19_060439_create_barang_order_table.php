@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('barang_order', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('produk_id');
-            $table->unsignedBigInteger('order_id');
             $table->foreignId('produk_id')->references('id')->on('produk')->onDelete('cascade');
             $table->foreignId('order_id')->references('id')->on('order')->onDelete('cascade');
             $table->float("harga");

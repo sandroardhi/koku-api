@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('kantin', function (Blueprint $table) {
             $table->id();
-            $table->string("nama_kantin");
-            $table->string("foto_kantin");
+            $table->string("nama");
+            $table->string("foto");
             $table->text("deskripsi");
-            $table->unsignedBigInteger('penjual_id');
             $table->foreignId('penjual_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
