@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
         $namaKategori = ['Nasi', 'Snack', 'Mie', 'Minuman'];
 
         $kategori = collect($namaKategori)->map(function ($name) {
-            return Kategori::factory()->create(['nama_kategori' => $name]);
+            return Kategori::factory()->create(['nama' => $name]);
         });
 
 

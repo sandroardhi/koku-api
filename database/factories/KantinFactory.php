@@ -18,8 +18,8 @@ class KantinFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama_kantin' => $this->faker->sentence,
-            'foto_kantin' => 'default.jpg', 
+            'nama' => $this->faker->sentence,
+            'foto' => 'default.jpg', 
             'deskripsi' => $this->faker->paragraph,
             'penjual_id' => User::factory(),
         ];

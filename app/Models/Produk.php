@@ -13,12 +13,13 @@ class Produk extends Model
     protected $table = "produk";
 
     protected $fillable = [
-        "foto_produk",
-        "nama_produk",
+        "foto",
+        "nama",
         "harga",
         "kuantitas",
         "penjual_id",
-        "kantin_id"
+        "kantin_id",
+        "kategori_id"
     ];
 
     public function kantin(): BelongsTo

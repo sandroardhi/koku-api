@@ -25,11 +25,16 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('auth')->group(function () {
+        Route::get('/profile', [AuthenticationController::class, 'profile'])->name('auth.profile');
+        Route::get('/logout', [AuthenticationController::class, 'logout'])->name('auth.logout');
+    });
+    Route::prefix('produk')->group(function () {
+        Route::get('/{id}', [ProdukController::class, 'show_produk'])->name('produk.show_produk');
+        Route::post('/{id}', [ProdukController::class, 'store'])->name('produk.store');
+        Route::put('/{id}', [ProdukController::class, 'update'])->name('produk.update');
+    });
     Route::apiResource('kantin', KantinController::class)->except(['index']);
     Route::get('/kantin/profile/{id}', [KantinController::class, 'show_profile_kantin'])->name('profile.kantin');
-    Route::get('/auth/profile', [AuthenticationController::class, 'profile'])->name('auth.profile');
-    Route::get('/auth/logout', [AuthenticationController::class, 'logout'])->name('auth.logout');
     Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
-    Route::get('/produk/{id}', [ProdukController::class, 'show_produk'])->name('produk.show_produk');
-    Route::post('/produk/{id}', [ProdukController::class, 'store'])->name('produk.store');
 });

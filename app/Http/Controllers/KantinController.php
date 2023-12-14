@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Kantin;
+use Illuminate\Support\Facades\Storage;
 
 class KantinController extends Controller
 {
@@ -26,25 +27,27 @@ class KantinController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'nama_kantin' => 'required|string|max:255|unique:kantin,nama_kantin',
-            'foto_kantin' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg',
+        $request->validate([
+            'nama' => 'required|string|max:255|unique:kantin,nama',
+            'foto' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg',
             'deskripsi' => 'nullable|string|max:750'
         ]);
 
-        if ($request->hasFile('foto_kantin')) {
-            $foto_path = $request->file('foto_kantin')->store('foto_kantin', 'public');
+        if ($request->hasFile('foto')) {
+            $foto_path = $request->file('foto')->store('foto_kantin', 'public');
         }
-        if ($request->foto_kantin) {
+        if ($request->foto) {
             return Kantin::create([
-                'nama_kantin' => $request->nama_kantin,
+                'nama' => $request->nama,
                 'deskripsi' => $request->deskripsi,
-                'foto_kantin' => $foto_path,
+                'foto' => $foto_path,
                 'penjual_id' => $request->user()->id,
             ]);
         } else {
             return Kantin::create([
-                ...$validatedData,
+                'nama' => $request->nama,
+                'deskripsi' => $request->deskripsi,
+                'foto' => 'default.jpg',
                 'penjual_id' => $request->user()->id,
             ]);
         }
@@ -55,23 +58,51 @@ class KantinController extends Controller
      */
     public function show(string $id)
     {
-        
+        // 
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $kantin)
     {
-        //
+        $rules = [
+            'nama' => 'required|string',
+            'deskripsi' => 'required|string',
+        ];
+
+        if ($request->hasFile('foto')) {
+            $rules['foto'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
+        } else {
+            $rules['foto'] = 'string'; // Adjust as needed
+        }
+        $this->validate($request, $rules);
+
+        $kantin = Kantin::find($kantin);
+
+        if (!$kantin) {
+            return response()->json(['message' => 'Kantin not found'], 404);
+        }
+
+        $kantin->nama = $request->input('nama');
+        $kantin->deskripsi = $request->input('deskripsi');
+
+        if ($request->hasFile('foto')) {
+            // Delete existing file if it exists
+            if ($kantin->foto) {
+                Storage::disk('public')->delete($kantin->foto);
+            }
+
+            // Store the new file
+            $fotoPath = $request->file('foto')->store('foto_kantin', 'public');
+            $kantin->foto = 'foto_kantin/' . basename($fotoPath);
+            
+        }
+
+        $kantin->save();
+
+        return response()->json(['message' => 'Kantin berhasil diupdate!']);
     }
 
     /**

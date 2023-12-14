@@ -19,8 +19,8 @@ class ProdukFactory extends Factory
     public function definition(): array
     {
         return [
-            'foto_produk' => 'default.jpg', 
-            'nama_produk' => $this->faker->word,
+            'foto' => 'default.jpg', 
+            'nama' => $this->faker->word,
             'harga' => $this->faker->numberBetween(7000, 20000),
             'kuantitas' => $this->faker->numberBetween(1, 20),
             'penjual_id' => User::factory(),

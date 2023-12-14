@@ -14,11 +14,11 @@ class Kantin extends Model
     protected $table = "kantin";
 
     protected $fillable = [
-        'nama_kantin',
+        'nama',
         "deskripsi",
         "penjual_id",
         "produk_id",
-        'foto_kantin',
+        'foto',
     ];
 
     public function user(): BelongsTo
