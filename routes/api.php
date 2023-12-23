@@ -5,7 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\KantinController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +27,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('admin')->group(function () {
+        Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
+        Route::put('/user/{id}/update-role', [AdminController::class, 'update_role'])->name('admin.update-role');
+        Route::get('/roles', [RoleController::class, 'index'])->name('admin.roles');
+    });
     Route::prefix('auth')->group(function () {
         Route::get('/profile', [AuthenticationController::class, 'profile'])->name('auth.profile');
         Route::get('/logout', [AuthenticationController::class, 'logout'])->name('auth.logout');
@@ -33,8 +40,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [ProdukController::class, 'show_produk'])->name('produk.show_produk');
         Route::post('/{id}', [ProdukController::class, 'store'])->name('produk.store');
         Route::put('/{id}', [ProdukController::class, 'update'])->name('produk.update');
+        Route::delete('/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+    });
+    Route::prefix('kategori')->group(function () {
+        Route::get('/fetch-kategori', [KategoriController::class, 'index'])->name('kategori.index');
+
     });
     Route::apiResource('kantin', KantinController::class)->except(['index']);
     Route::get('/kantin/profile/{id}', [KantinController::class, 'show_profile_kantin'])->name('profile.kantin');
-    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
 });

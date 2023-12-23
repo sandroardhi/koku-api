@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Kategori;
 use App\Models\Produk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -28,22 +30,25 @@ class ProdukController extends Controller
                 "products.{$index}.nama" => 'required|string|max:255',
                 "products.{$index}.harga" => 'required|numeric|min:1',
                 "products.{$index}.kuantitas" => 'required|numeric|min:1',
-                "products.{$index}.foto" => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                "products.{$index}.deskripsi" => 'required',
+                "products.{$index}.kategori_id" => 'required',
+                "products.{$index}.foto" => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
-            // Handle file 
             $file = $request->file("products.{$index}.foto");
-            $fileName = "{$index}_{$file->getClientOriginalName()}"; // Adjust the file name as needed
-            $filePath = $file->storeAs('produk_images', $fileName, 'public');
+            $fileName = "{$index}_{$file->getClientOriginalName()}";
+            $fotoPath = $file->storeAs('foto_produk', $fileName, 'public');
+
 
             $product = new Produk([
                 'nama' => $productData['nama'],
                 'harga' => $productData['harga'],
                 'kuantitas' => $productData['kuantitas'],
-                'foto' => $filePath,
+                'deskripsi' => $productData['deskripsi'],
+                'foto' => $fotoPath,
                 'penjual_id' => $user->id,
                 'kantin_id' => $kantinId,
-                'kategori_id' => '1'
+                'kategori_id' => $productData['kategori_id']
             ]);
 
             $product->save();
@@ -58,6 +63,8 @@ class ProdukController extends Controller
             'nama' => 'required|string',
             'harga' => 'required',
             'kuantitas' => 'required',
+            'kategori_id' => 'required',
+            'deskripsi' => 'required',
         ];
 
         if ($request->hasFile('foto')) {
@@ -76,6 +83,8 @@ class ProdukController extends Controller
         $produk->nama = $request->input('nama');
         $produk->harga = $request->input('harga');
         $produk->kuantitas = $request->input('kuantitas');
+        $produk->deskripsi = $request->input('deskripsi');
+        $produk->kategori_id = $request->input('kategori_id');
 
         if ($request->hasFile('foto')) {
             // Delete existing file if it exists
@@ -91,5 +100,23 @@ class ProdukController extends Controller
         $produk->save();
 
         return response()->json(['message' => 'Produk berhasil diupdate!']);
+    }
+
+    public function destroy($id)
+    {
+        $produk = Produk::find($id);
+
+        if (!$produk) {
+            return response()->json(['message' => 'Produk tidak ada?!'], 404);
+        }
+
+        // Delete the associated image
+        if ($produk->foto) {
+            Storage::disk('public')->delete($produk->foto);
+        }
+
+        $produk->delete();
+
+        return response()->json(['message' => 'Product deleted successfully']);
     }
 }

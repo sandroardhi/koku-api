@@ -42,7 +42,7 @@ class AuthenticationController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt(($request->password)),
-            'tipe_user' => $request->tipe_user,
+            'role' => $request->role,
             'status' => $request->status
         ]);
     }

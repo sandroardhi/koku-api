@@ -22,11 +22,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'tipe_user',
         'status',
         'profile_picture',
         'nomor_hp',
-        'deskripsi'
+        'deskripsi',
+        'role_id'
     ];
 
     /**
@@ -52,5 +52,9 @@ class User extends Authenticatable
     public function kantin() : HasOne 
     {
         return $this->hasOne(Kantin::class, "penjual_id");
+    }
+    public function role() : HasOne 
+    {
+        return $this->hasOne(Role::class, "role_id");
     }
 }

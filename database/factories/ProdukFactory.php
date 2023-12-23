@@ -21,6 +21,7 @@ class ProdukFactory extends Factory
         return [
             'foto' => 'default.jpg', 
             'nama' => $this->faker->word,
+            'deskripsi' => $this->faker->text,
             'harga' => $this->faker->numberBetween(7000, 20000),
             'kuantitas' => $this->faker->numberBetween(1, 20),
             'penjual_id' => User::factory(),

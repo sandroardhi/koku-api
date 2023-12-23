@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Kantin;
 use App\Models\Produk;
 use App\Models\Kategori;
+use App\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -16,18 +17,25 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(RoleSeeder::class);
+
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => bcrypt('password'),
+            'role_id' => Role::where('role', 'User')->first()->id,
+        ]);
+        User::factory()->create([
+            'name' => 'admin',
+            'email' => 'admin@gmail.com',
+            'password' => bcrypt('password'),
+            'role_id' => Role::where('role', 'Admin')->first()->id,
+
         ]);
 
-        // User::factory()->state([
-        //     'tipe_user' => "penjual"
-        // ])->has(Kantin::factory()->has(Produk::factory()->count(7)))->count(2)->create();
         $penjual = User::factory()->state([
-            'tipe_user' => 'penjual'
-        ])->count(2)->create();
+            'role_id' => Role::where('role', 'Penjual')->first()->id,
+        ])->count(4)->create();
 
         $namaKategori = ['Nasi', 'Snack', 'Mie', 'Minuman'];
 

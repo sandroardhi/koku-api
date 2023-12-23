@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string("foto")->nullable();
             $table->string("nama");
+            $table->text("deskripsi");
             $table->integer("harga");
             $table->integer("kuantitas");
             $table->foreignId('kantin_id')->references('id')->on('kantin')->onDelete('cascade');
