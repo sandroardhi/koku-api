@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string("nama");
             $table->text("deskripsi");
             $table->integer("harga");
-            $table->integer("kuantitas");
+            $table->integer("stok");
             $table->foreignId('kantin_id')->references('id')->on('kantin')->onDelete('cascade');
             $table->foreignId('penjual_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreignId('kategori_id')->references('id')->on('kategori')->onDelete('cascade');

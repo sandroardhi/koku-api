@@ -16,7 +16,7 @@ class Produk extends Model
         "foto",
         "nama",
         "harga",
-        "kuantitas",
+        "stok",
         "deskripsi",
         "penjual_id",
         "kantin_id",

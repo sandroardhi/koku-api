@@ -12,7 +12,8 @@ class Kategori extends Model
     protected $table = 'kategori';
 
     protected $fillable = [
-        'nama'
+        'nama',
+        'foto'
     ];
 
     public function produk() : HasMany

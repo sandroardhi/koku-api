@@ -23,7 +23,7 @@ class ProdukFactory extends Factory
             'nama' => $this->faker->word,
             'deskripsi' => $this->faker->text,
             'harga' => $this->faker->numberBetween(7000, 20000),
-            'kuantitas' => $this->faker->numberBetween(1, 20),
+            'stok' => $this->faker->numberBetween(1, 20),
             'penjual_id' => User::factory(),
             'kantin_id' => Kantin::factory(),
         ];

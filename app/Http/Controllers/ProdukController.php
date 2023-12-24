@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Kategori;
 use App\Models\Produk;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -29,10 +28,10 @@ class ProdukController extends Controller
             $request->validate([
                 "products.{$index}.nama" => 'required|string|max:255',
                 "products.{$index}.harga" => 'required|numeric|min:1',
-                "products.{$index}.kuantitas" => 'required|numeric|min:1',
+                "products.{$index}.stok" => 'required|numeric|min:1',
                 "products.{$index}.deskripsi" => 'required',
                 "products.{$index}.kategori_id" => 'required',
-                "products.{$index}.foto" => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+                "products.{$index}.foto" => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:5000',
             ]);
 
             $file = $request->file("products.{$index}.foto");
@@ -43,7 +42,7 @@ class ProdukController extends Controller
             $product = new Produk([
                 'nama' => $productData['nama'],
                 'harga' => $productData['harga'],
-                'kuantitas' => $productData['kuantitas'],
+                'stok' => $productData['stok'],
                 'deskripsi' => $productData['deskripsi'],
                 'foto' => $fotoPath,
                 'penjual_id' => $user->id,
@@ -68,9 +67,9 @@ class ProdukController extends Controller
         ];
 
         if ($request->hasFile('foto')) {
-            $rules['foto'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
+            $rules['foto'] = 'image|mimes:jpeg,png,jpg,gif|max:5000';
         } else {
-            $rules['foto'] = 'string'; // Adjust as needed
+            $rules['foto'] = 'string'; // iki lek ga atek update foto
         }
         $this->validate($request, $rules);
 
@@ -117,6 +116,6 @@ class ProdukController extends Controller
 
         $produk->delete();
 
-        return response()->json(['message' => 'Product deleted successfully']);
+        return response()->json(['message' => 'Produk berhasil didelete']);
     }
 }

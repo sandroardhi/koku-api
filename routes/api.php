@@ -44,6 +44,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::prefix('kategori')->group(function () {
         Route::get('/fetch-kategori', [KategoriController::class, 'index'])->name('kategori.index');
+        Route::post('/store-kategori', [KategoriController::class, 'store'])->name('kategori.store');
+        Route::put('/update-kategori/{id}', [KategoriController::class, 'update'])->name('kategori.update');
+        Route::delete('/delete-kategori/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
 
     });
     Route::apiResource('kantin', KantinController::class)->except(['index']);
