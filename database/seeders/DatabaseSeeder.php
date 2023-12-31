@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
     {
         PersonalAccessToken::query()->delete();
         $this->call([
+            PermissionSeeder::class,
+            RoleSeeder::class,
             UserSeeder::class,
         ]);
     }

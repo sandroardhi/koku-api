@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\Kantin;
 use App\Models\Produk;
 use App\Models\Kategori;
-use App\Models\Role;
+use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -17,25 +17,31 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(RoleSeeder::class);
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-            'role_id' => Role::where('role', 'User')->first()->id,
-        ]);
-        User::factory()->create([
+        $admin = User::factory()->create([
             'name' => 'admin',
             'email' => 'admin@gmail.com',
             'password' => bcrypt('password'),
-            'role_id' => Role::where('role', 'Admin')->first()->id,
-
+            'level' => 'admin'
         ]);
 
-        $penjual = User::factory()->state([
-            'role_id' => Role::where('role', 'Penjual')->first()->id,
-        ])->count(4)->create();
+        $users = User::factory(10)->create();
+
+        $penjuals = User::factory()->count(4)->create([
+            'level' => 'penjual'
+        ]);
+
+        $adminRole = Role::where('name', 'admin')->first();
+        $userRole = Role::where('name', 'user')->first();
+        $penjualRole = Role::where('name', 'penjual')->first();
+
+        $admin->assignRole($adminRole->id);
+        foreach ($users as $user) {
+            $user->assignRole($userRole->id);
+        }
+        
+        foreach ($penjuals as $penjual) {
+            $penjual->assignRole($penjualRole->id);
+        }
 
         $namaKategori = ['Nasi', 'Snack', 'Mie', 'Minuman'];
 
@@ -44,11 +50,10 @@ class UserSeeder extends Seeder
         });
 
 
-        $penjual->each(function ($user) use ($kategori) {
+        $penjuals->each(function ($user) use ($kategori) {
             $kantin = Kantin::factory()->create(['penjual_id' => $user->id]);
             $produk = Produk::factory()->count(7)->create(['penjual_id' => $user->id, 'kantin_id' => $kantin->id, 'kategori_id' => $kategori->pluck('id')->random()]);
         });
 
-        User::factory(10)->create();
     }
 }

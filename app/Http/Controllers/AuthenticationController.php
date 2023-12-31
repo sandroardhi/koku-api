@@ -23,10 +23,12 @@ class AuthenticationController extends Controller
                 'email' => 'Alamat email atau password salah',
             ]);
         }
+        $role = $user->roles->pluck('name')->first();
 
         return [
             'access_token' => $user->createToken($request->device_name)->plainTextToken,
             'user' => $user,
+            'role' => $role,
         ];
     }
 
@@ -38,13 +40,16 @@ class AuthenticationController extends Controller
             'password' => 'required|confirmed'
         ]);
 
-        return User::create([
+        $user =  User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt(($request->password)),
-            'role' => $request->role,
             'status' => $request->status
         ]);
+
+        $user->assignRole('user');
+
+        return $user;
     }
     public function logout(Request $request)
     {

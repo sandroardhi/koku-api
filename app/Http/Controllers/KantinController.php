@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Kantin;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class KantinController extends Controller
@@ -25,31 +27,37 @@ class KantinController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, User $user)
     {
-        $request->validate([
-            'nama' => 'required|string|max:255|unique:kantin,nama',
-            'foto' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg',
-            'deskripsi' => 'nullable|string|max:750'
-        ]);
-
-        if ($request->hasFile('foto')) {
-            $foto_path = $request->file('foto')->store('foto_kantin', 'public');
-        }
-        if ($request->foto) {
-            return Kantin::create([
-                'nama' => $request->nama,
-                'deskripsi' => $request->deskripsi,
-                'foto' => $foto_path,
-                'penjual_id' => $request->user()->id,
+        $userAuth = User::find(Auth::user()->id);
+        if($userAuth->can('create-kantin'))
+        {
+            $request->validate([
+                'nama' => 'required|string|max:255|unique:kantin,nama',
+                'foto' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg',
+                'deskripsi' => 'nullable|string|max:750'
             ]);
+    
+            if ($request->hasFile('foto')) {
+                $foto_path = $request->file('foto')->store('foto_kantin', 'public');
+            }
+            if ($request->foto) {
+                return Kantin::create([
+                    'nama' => $request->nama,
+                    'deskripsi' => $request->deskripsi,
+                    'foto' => $foto_path,
+                    'penjual_id' => $request->user()->id,
+                ]);
+            } else {
+                return Kantin::create([
+                    'nama' => $request->nama,
+                    'deskripsi' => $request->deskripsi,
+                    'foto' => 'default.jpg',
+                    'penjual_id' => $request->user()->id,
+                ]);
+            }
         } else {
-            return Kantin::create([
-                'nama' => $request->nama,
-                'deskripsi' => $request->deskripsi,
-                'foto' => 'default.jpg',
-                'penjual_id' => $request->user()->id,
-            ]);
+            return response('Gaboleh', 403);
         }
     }
 

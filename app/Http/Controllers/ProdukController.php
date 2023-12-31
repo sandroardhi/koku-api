@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Kategori;
 use App\Models\Produk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -35,7 +36,9 @@ class ProdukController extends Controller
             ]);
 
             $file = $request->file("products.{$index}.foto");
-            $fileName = "{$index}_{$file->getClientOriginalName()}";
+            $uniqueIdentifier = Str::uuid()->toString();
+            $fileExtension = $file->getClientOriginalExtension();
+            $fileName = "{$uniqueIdentifier}.{$fileExtension}";
             $fotoPath = $file->storeAs('foto_produk', $fileName, 'public');
 
 
@@ -61,7 +64,7 @@ class ProdukController extends Controller
         $rules = [
             'nama' => 'required|string',
             'harga' => 'required',
-            'kuantitas' => 'required',
+            'stok' => 'required',
             'kategori_id' => 'required',
             'deskripsi' => 'required',
         ];
@@ -81,7 +84,7 @@ class ProdukController extends Controller
 
         $produk->nama = $request->input('nama');
         $produk->harga = $request->input('harga');
-        $produk->kuantitas = $request->input('kuantitas');
+        $produk->stok = $request->input('stok');
         $produk->deskripsi = $request->input('deskripsi');
         $produk->kategori_id = $request->input('kategori_id');
 
@@ -93,7 +96,7 @@ class ProdukController extends Controller
 
             // Store the new file
             $fotoPath = $request->file('foto')->store('foto_produk', 'public');
-            $produk->foto = 'foto_produk/' . basename($fotoPath);
+            $produk->foto = $fotoPath;
         }
 
         $produk->save();

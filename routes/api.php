@@ -27,27 +27,32 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::prefix('admin')->group(function () {
-        Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
-        Route::put('/user/{id}/update-role', [AdminController::class, 'update_role'])->name('admin.update-role');
-        Route::get('/roles', [RoleController::class, 'index'])->name('admin.roles');
+    Route::group(['middleware' => ['role:admin']], function () {
+        Route::prefix('admin')->group(function () {
+            Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
+            Route::put('/user/{id}/update-role', [AdminController::class, 'update_role'])->name('admin.update-role');
+        });
+        Route::prefix('kategori')->group(function () {
+            Route::post('/store-kategori', [KategoriController::class, 'store'])->name('kategori.store');
+            Route::put('/update-kategori/{id}', [KategoriController::class, 'update'])->name('kategori.update');
+            Route::delete('/delete-kategori/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
+        });
+        Route::apiResource('roles', RoleController::class);
+        Route::get('/roles/fetch/permission', [RoleController::class, 'fetch_permission'])->name('roles.fetch_permission');
+        Route::get('/roles/fetch-edit-data/{id}', [RoleController::class, 'fetch_role_edit_data'])->name('roles.fetch_role_edit_data');
     });
+    Route::get('kategori/fetch-kategori', [KategoriController::class, 'index'])->name('kategori.index');
     Route::prefix('auth')->group(function () {
         Route::get('/profile', [AuthenticationController::class, 'profile'])->name('auth.profile');
         Route::get('/logout', [AuthenticationController::class, 'logout'])->name('auth.logout');
     });
-    Route::prefix('produk')->group(function () {
-        Route::get('/{id}', [ProdukController::class, 'show_produk'])->name('produk.show_produk');
-        Route::post('/{id}', [ProdukController::class, 'store'])->name('produk.store');
-        Route::put('/{id}', [ProdukController::class, 'update'])->name('produk.update');
-        Route::delete('/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
-    });
-    Route::prefix('kategori')->group(function () {
-        Route::get('/fetch-kategori', [KategoriController::class, 'index'])->name('kategori.index');
-        Route::post('/store-kategori', [KategoriController::class, 'store'])->name('kategori.store');
-        Route::put('/update-kategori/{id}', [KategoriController::class, 'update'])->name('kategori.update');
-        Route::delete('/delete-kategori/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
-
+    Route::group(['middleware' => ['role:penjual|admin']], function () {
+        Route::prefix('produk')->group(function () {
+            Route::get('/{id}', [ProdukController::class, 'show_produk'])->name('produk.show_produk');
+            Route::post('/{id}', [ProdukController::class, 'store'])->name('produk.store');
+            Route::put('/{id}', [ProdukController::class, 'update'])->name('produk.update');
+            Route::delete('/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+        });
     });
     Route::apiResource('kantin', KantinController::class)->except(['index']);
     Route::get('/kantin/profile/{id}', [KantinController::class, 'show_profile_kantin'])->name('profile.kantin');
