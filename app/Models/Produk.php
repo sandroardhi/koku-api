@@ -33,6 +33,10 @@ class Produk extends Model
     }
     public function kategori(): BelongsTo
     {
-        return $this->belongsTo(User::class, "penjual_id");
+        return $this->belongsTo(Kategori::class, 'kategori_id');
+    }
+    public function keranjangs()
+    {
+        return $this->belongsToMany(Keranjang::class, 'barang_keranjang', 'produk_id', 'keranjang_id')->withPivot('kuantitas');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kategori;
+use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,14 @@ class KategoriController extends Controller
     public function index()
     {
         return Kategori::all();
+    }
+
+    public function show($id)
+    {
+        $kategori = Kategori::findOrFail($id);
+        $produks = Produk::where('kategori_id', $id)->get();
+
+        return response()->json(['produks' => $produks, 'kategori' => $kategori]);
     }
 
     public function store(Request $request)

@@ -15,11 +15,6 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->foreignId('pembeli_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string("nama_pembeli");
-            $table->string("kelas");
-            $table->string("ruang_kelas")->nullable();
-            $table->string("no_hp");
-            $table->string("status");
         });
     }
 

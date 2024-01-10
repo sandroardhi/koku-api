@@ -16,8 +16,8 @@ class Kategori extends Model
         'foto'
     ];
 
-    public function produk() : HasMany
+    public function produks(): HasMany
     {
-        return $this->hasMany(Produk::class);
+        return $this->hasMany(Produk::class, 'kategori_id');
     }
 }

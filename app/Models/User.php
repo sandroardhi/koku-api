@@ -50,8 +50,12 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function kantin() : HasOne 
+    public function kantin(): HasOne
     {
         return $this->hasOne(Kantin::class, "penjual_id");
+    }
+    public function keranjang()
+    {
+        return $this->hasOne(Keranjang::class, 'pembeli_id');
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\KantinController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\KeranjangController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\RoleController;
 
@@ -23,7 +24,7 @@ use App\Http\Controllers\RoleController;
 Route::middleware('guest')->group(function () {
     Route::post('/auth/login', [AuthenticationController::class, 'login'])->name('auth.login');
     Route::post('/auth/register', [AuthenticationController::class, 'register'])->name('auth.register');
-    Route::apiResource('kantin', KantinController::class)->only(['index']);
+    Route::apiResource('kantin', KantinController::class)->only(['index', 'show']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -41,7 +42,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/roles/fetch/permission', [RoleController::class, 'fetch_permission'])->name('roles.fetch_permission');
         Route::get('/roles/fetch-edit-data/{id}', [RoleController::class, 'fetch_role_edit_data'])->name('roles.fetch_role_edit_data');
     });
-    Route::get('kategori/fetch-kategori', [KategoriController::class, 'index'])->name('kategori.index');
     Route::prefix('auth')->group(function () {
         Route::get('/profile', [AuthenticationController::class, 'profile'])->name('auth.profile');
         Route::get('/logout', [AuthenticationController::class, 'logout'])->name('auth.logout');
@@ -54,6 +54,15 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
         });
     });
-    Route::apiResource('kantin', KantinController::class)->except(['index']);
+    Route::prefix('keranjang')->group(function () {
+        Route::post('/add-to-cart', [KeranjangController::class, 'addToCart'])->name('keranjang.addToCart');
+        Route::get('/get-cart-data', [KeranjangController::class, 'getCartData'])->name('keranjang.getCartData');
+        Route::put('/update-kuantitas', [KeranjangController::class, 'updateKuantitas'])->name('keranjang.updateKuantitas');
+        Route::delete('/delete', [KeranjangController::class, 'deleteCartProduct'])->name('keranjang.deleteCartProduct');
+    });
+    Route::apiResource('kantin', KantinController::class)->except(['index', 'show']);
     Route::get('/kantin/profile/{id}', [KantinController::class, 'show_profile_kantin'])->name('profile.kantin');
 });
+Route::get('/kantin/index/fetch-nama-kantin', [KantinController::class, 'fetch_kantin_name'])->name('kantin.fetch_kantin_name');
+Route::get('kategori/fetch-kategori', [KategoriController::class, 'index'])->name('kategori.index');
+Route::get('kategori/fetch-kategori-detail/{id}', [KategoriController::class, 'show'])->name('kategori.show');

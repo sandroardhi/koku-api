@@ -15,9 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('produk_id')->references('id')->on('produk')->onDelete('cascade');
             $table->foreignId('keranjang_id')->references('id')->on('keranjang')->onDelete('cascade');
-            $table->float("harga");
             $table->integer("kuantitas");
-            $table->boolean("aktif")->default(true);
             $table->timestamps();
         });
     }

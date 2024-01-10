@@ -18,26 +18,31 @@ class KantinController extends Controller
         return Kantin::all();
     }
 
+
     // gae display kantin milik penjual
     public function show_profile_kantin($id)
     {
         return Kantin::where('penjual_id', $id)->get();
     }
 
+    public function fetch_kantin_name()
+    {
+        return Kantin::pluck('nama', 'id');
+    }
+
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, User $user)
+    public function store(Request $request)
     {
         $userAuth = User::find(Auth::user()->id);
-        if($userAuth->can('create-kantin'))
-        {
+        if ($userAuth->can('create-kantin')) {
             $request->validate([
                 'nama' => 'required|string|max:255|unique:kantin,nama',
                 'foto' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg',
                 'deskripsi' => 'nullable|string|max:750'
             ]);
-    
+
             if ($request->hasFile('foto')) {
                 $foto_path = $request->file('foto')->store('foto_kantin', 'public');
             }
@@ -66,7 +71,7 @@ class KantinController extends Controller
      */
     public function show(string $id)
     {
-        // 
+        return Kantin::with('produks.kategori')->findOrFail($id);
     }
 
 
@@ -81,7 +86,7 @@ class KantinController extends Controller
         ];
 
         if ($request->hasFile('foto')) {
-            $rules['foto'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
+            $rules['foto'] = 'image|mimes:jpeg,png,jpg,gif';
         } else {
             $rules['foto'] = 'string'; // Adjust as needed
         }
@@ -105,7 +110,6 @@ class KantinController extends Controller
             // Store the new file
             $fotoPath = $request->file('foto')->store('foto_kantin', 'public');
             $kantin->foto = 'foto_kantin/' . basename($fotoPath);
-            
         }
 
         $kantin->save();
