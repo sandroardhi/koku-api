@@ -11,11 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('barang_order', function (Blueprint $table) {
+        Schema::create('order_barang', function (Blueprint $table) {
             $table->id();
             $table->foreignId('produk_id')->references('id')->on('produk')->onDelete('cascade');
-            $table->foreignId('order_id')->references('id')->on('order')->onDelete('cascade');
-            $table->float("harga");
+            $table->foreignId('order_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->foreignId('kantin_id')->references('id')->on('kantin')->onDelete('cascade');
+            $table->string('nama');
+            $table->string('foto');
+            $table->double("harga");
+            $table->enum('status', ['Dibuat', 'Gagal Dibuat','Selesai'])->default('Dibuat');
             $table->integer("kuantitas");
             $table->timestamps();
         });

@@ -19,7 +19,7 @@ class ProdukFactory extends Factory
     public function definition(): array
     {
         return [
-            'foto' => 'default.jpg', 
+            'foto' => 'foto_produk/default.jpg', 
             'nama' => $this->faker->word,
             'deskripsi' => $this->faker->text,
             'harga' => $this->faker->numberBetween(7000, 20000),

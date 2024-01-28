@@ -33,10 +33,16 @@ class KeranjangController extends Controller
     {
         $user = auth()->user();
         $keranjang = $user->keranjang;
-        $produkData = $keranjang->produks()->withPivot('kuantitas')->get();
 
-        return response()->json(['keranjang' => $keranjang, 'produkData' => $produkData]);
+        if ($keranjang) {
+            $produkData = $keranjang->produks()->withPivot('kuantitas')->get();
+
+            return response()->json(['keranjang' => $keranjang, 'produkData' => $produkData ?? []]);
+        }
+
+        return response()->json(['message' => 'Cart is empty']);
     }
+
 
     public function deleteCartProduct(Request $request)
     {
@@ -53,7 +59,6 @@ class KeranjangController extends Controller
 
     public function updateKuantitas(Request $request)
     {
-        Log::info($request->all());
         $produk_id = $request->input('produk_id');
         $produk = Produk::findOrFail($produk_id);
         $keranjang = auth()->user()->keranjang;

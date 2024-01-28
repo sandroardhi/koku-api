@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tujuan;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthenticationController extends Controller
 {
@@ -58,7 +60,7 @@ class AuthenticationController extends Controller
         if ($token) {
             $token->delete();
         }
-    
+
         return response()->json(['message' => 'Berhasil logout']);
     }
 
@@ -66,5 +68,27 @@ class AuthenticationController extends Controller
     {
         // ini cuma ngembaliin info user yang lagi login
         return $request->user();
+    }
+
+    public function tujuan()
+    {
+        $user = auth()->user();
+        return  $user->tujuans;
+    }
+
+    public function create_tujuan(Request $request)
+    {
+        Log::info("create tujuan ini");
+        Log::info($request->tujuan);
+        $user = auth()->user();
+        $request->validate([
+            'tujuan' => 'required|string|max:255',
+        ]);
+        Tujuan::create([
+            'tujuan' => $request->tujuan,
+            'user_id' => $user->id
+        ]);
+
+        return response()->json(['message' => 'Berhasil buat tujuan']);
     }
 }

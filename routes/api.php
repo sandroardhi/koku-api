@@ -7,6 +7,7 @@ use App\Http\Controllers\KantinController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\KeranjangController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\RoleController;
 
@@ -44,6 +45,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::prefix('auth')->group(function () {
         Route::get('/profile', [AuthenticationController::class, 'profile'])->name('auth.profile');
+        Route::get('/tujuan', [AuthenticationController::class, 'tujuan'])->name('auth.tujuan');
+        Route::post('/create-tujuan', [AuthenticationController::class, 'create_tujuan'])->name('auth.create_tujuan');
         Route::get('/logout', [AuthenticationController::class, 'logout'])->name('auth.logout');
     });
     Route::group(['middleware' => ['role:penjual|admin']], function () {
@@ -52,6 +55,21 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/{id}', [ProdukController::class, 'store'])->name('produk.store');
             Route::put('/{id}', [ProdukController::class, 'update'])->name('produk.update');
             Route::delete('/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+        });
+    });
+    Route::group(['middleware' => ['role:user|admin']], function () {
+        Route::prefix('order')->group(function () {
+            Route::post('/pay-and-create', [OrderController::class, 'payAndCreateOrder'])->name('order.payAndCreateOrder');
+            Route::get('/order-pending', [OrderController::class, 'OrderPending'])->name('order.OrderPending');
+            Route::get('/order-proses', [OrderController::class, 'OrderProses'])->name('order.OrderProses');
+            Route::get('/order-selesai', [OrderController::class, 'OrderSelesai'])->name('order.OrderSelesai');
+            Route::post('/destroy', [OrderController::class, 'destroy'])->name('order.destroy');
+        });
+    });
+    Route::group(['middleware' => ['role:penjual|admin']], function () {
+        Route::prefix('order')->group(function () {
+            Route::get('/order-masuk', [OrderController::class, 'OrderPenjualMasuk'])->name('order.OrderPenjualMasuk');
+            Route::post('/order-update-status', [OrderController::class, 'UpdateStatusOrderProdukSelesai'])->name('order.UpdateStatusOrderProdukSelesai');
         });
     });
     Route::prefix('keranjang')->group(function () {
@@ -66,3 +84,5 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/kantin/index/fetch-nama-kantin', [KantinController::class, 'fetch_kantin_name'])->name('kantin.fetch_kantin_name');
 Route::get('kategori/fetch-kategori', [KategoriController::class, 'index'])->name('kategori.index');
 Route::get('kategori/fetch-kategori-detail/{id}', [KategoriController::class, 'show'])->name('kategori.show');
+
+Route::post('/order/callback', [OrderController::class, 'callback'])->name('order.callback');

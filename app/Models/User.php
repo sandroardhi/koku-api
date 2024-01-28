@@ -58,4 +58,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(Keranjang::class, 'pembeli_id');
     }
+    public function tujuans()
+    {
+        return $this->hasMany(Tujuan::class);
+    }
 }
