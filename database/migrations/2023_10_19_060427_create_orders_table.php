@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum("tipe_pengiriman", ["Pick-up", "Antar"]);
             $table->enum("tipe_pembayaran", ["Cash", "Online"]);
             $table->double("total_harga");
-            $table->enum('status', ['Menunggu Konfirmasi', 'Proses', 'Dikirim', 'Selesai']);
+            $table->enum('status', ['Menunggu Konfirmasi', 'Proses', 'Dikirim', 'Selesai', 'Canceled'])->default('Menunggu Konfirmasi');
             $table->enum('payment_status', ['pending', 'paid', 'canceled']);
             $table->timestamps();
             $table->string('tujuan')->nullable();

@@ -20,7 +20,7 @@ class Order extends Model
 
     public function getCreatedAtAttribute($value)
     {
-        return Carbon::parse($value)->timezone('Asia/Jakarta')->isoFormat('D MMM YYYY');
+        return Carbon::parse($value)->timezone('Asia/Jakarta')->isoFormat('D MMM YYYY H:mm:ss');
     }
 
 

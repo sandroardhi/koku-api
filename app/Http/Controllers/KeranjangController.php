@@ -22,10 +22,10 @@ class KeranjangController extends Controller
 
         if ($keranjang->produks()->where('produk_id', $productId)->exists()) {
             $keranjang->produks()->updateExistingPivot($productId, ['kuantitas' => $kuantitas]);
-            return response()->json(['message' => 'berhasil memasukkan produk ke keranjang!']);
+            return response()->json(['message' => 'berhasil memasukkan produk ke keranjang!', 'produkData' => $keranjang->produks()->withPivot('kuantitas')->get(), 'keranjang' => $keranjang]);
         } else {
             $keranjang->produks()->attach($productId, ['kuantitas' => $kuantitas]);
-            return response()->json(['message' => 'berhasil menambah kuantitas!']);
+            return response()->json(['message' => 'berhasil menambah kuantitas!', 'produkData' => $keranjang->produks()->withPivot('kuantitas')->get(), 'keranjang' => $keranjang]);
         }
     }
 
@@ -40,7 +40,7 @@ class KeranjangController extends Controller
             return response()->json(['keranjang' => $keranjang, 'produkData' => $produkData ?? []]);
         }
 
-        return response()->json(['message' => 'Cart is empty']);
+        return response()->json(['message' => 'Keranjang kosong']);
     }
 
 
@@ -51,7 +51,7 @@ class KeranjangController extends Controller
 
         if ($keranjang->produks()->where('produk_id', $produk_id)->exists()) {
             $keranjang->produks()->detach($produk_id);
-            return response()->json(['message' => 'Product removed from cart.']);
+            return response()->json(['message' => 'Product removed from cart.', 'produkData' => $keranjang->produks()->withPivot('kuantitas')->get(), 'keranjang' => $keranjang]);
         }
 
         return response()->json(['error' => 'Product not found in the cart.'], 400);
@@ -72,14 +72,14 @@ class KeranjangController extends Controller
             if ($newKuantitas > 0) {
                 if ($newKuantitas <= $produk->stok) {
                     $keranjang->produks()->updateExistingPivot($produk->id, ['kuantitas' => DB::raw($newKuantitas)]);
-                    return response()->json(['message' => 'Kuantitas updated successfully']);
+                    return response()->json(['message' => 'Kuantitas updated successfully', 'produkData' => $keranjang->produks()->withPivot('kuantitas')->get(), 'keranjang' => $keranjang]);
                 } else {
-                    return response()->json(['error' => 'Insufficient stock for the operation.'], 400);
+                    return response()->json(['error' => 'Stok udah abis....'], 400);
                 }
             } else {
                 // Remove the record from the pivot table
                 $keranjang->produks()->detach($produk->id);
-                return response()->json(['message' => 'Product removed from cart.']);
+                return response()->json(['message' => 'Product removed from cart.', 'produkData' => $keranjang->produks()->withPivot('kuantitas')->get(), 'keranjang' => $keranjang]);
             }
         }
         return response()->json(['error' => 'Invalid product in the cart.'], 400);

@@ -154,7 +154,7 @@ class OrderController extends Controller
 
         if ($hashed == $request->signature_key) {
             if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
-                $order->update(['payment_status' => 'paid', 'status' => 'Proses']);
+                $order->update(['payment_status' => 'paid', 'status' => 'Menunggu Konfirmasi']);
             } elseif ($request->transaction_status == 'expire') {
                 $order->update(['payment_status' => 'canceled']);
             }
