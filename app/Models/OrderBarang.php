@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Observers\OrderBarangObserver;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,13 @@ class OrderBarang extends Model
     protected $guarded = [
         "id"
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+        static::observe(OrderBarangObserver::class);
+    }
+
     public function getCreatedAtAttribute($value)
     {
         return Carbon::parse($value)->timezone('Asia/Jakarta')->isoFormat('D MMM YYYY H:mm:ss');

@@ -160,6 +160,7 @@ class OrderController extends Controller
             }
         }
     }
+
     // END OF MIDTRANS INTEGRAGITON
 
     // START OF USER'S ORDER DATA 
@@ -180,6 +181,9 @@ class OrderController extends Controller
         return Order::with(['orderBarangs', 'user'])
             ->where('user_id', $user->id)
             ->where('payment_status', 'paid')
+            ->where('status', 'Proses')
+            ->orWhere('status', 'Dikirim')
+            ->orWhere('status', 'Konfirmasi Pembeli')
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -211,7 +215,19 @@ class OrderController extends Controller
         }
         Order::destroy($order_id);
 
-        return redirect()->back()->with('success', 'success hapus order');
+        return response()->json(['message' => 'OrderBarang status updated to Selesai successfully']);
+    }
+
+    public function UserUpdateOrderSelesai(Request $request)
+    {
+        $order_id = $request->input('order_id');
+
+        $order = Order::where('id', $order_id)->first();
+
+        $order->status = 'Selesai';
+        $order->save();
+
+        return response()->json(['message' => 'OrderBarang status updated to Dibuat successfully']);
     }
     // END OF USER'S ORDER DATA 
 
@@ -223,7 +239,9 @@ class OrderController extends Controller
 
         $orderBarangs = OrderBarang::with(['order', 'order.user'])
             ->whereHas('order', function ($query) {
-                $query->where('payment_status', 'paid');
+                $query->where('status', 'Menunggu Konfirmasi')
+                    ->orWhere('status', 'Proses')
+                    ->orWhere('status', 'Konfirmasi Pembeli');
             })
             ->where('kantin_id', $kantin->id)
             ->get();
@@ -258,12 +276,54 @@ class OrderController extends Controller
         return $sortedGroups;
     }
 
+    public function OrderPenjualCancel()
+    {
+        $user = auth()->user();
+        $kantin = $user->kantin;
+
+        $orderBarangs = OrderBarang::with(['order', 'order.user'])
+            ->whereHas('order', function ($query) {
+                $query->where('status', 'Canceled');
+            })
+            ->where('kantin_id', $kantin->id)
+            ->get();
+
+        $groupedOrders = $orderBarangs->groupBy('order_id');
+
+        $sortedGroups = $groupedOrders->sortByDesc(function ($group) {
+            return $group->max('created_at');
+        });
+
+        return $sortedGroups;
+    }
+
+    public function UpdateStatusOrderProdukDibuat(Request $request)
+    {
+        $orderBarangIds = $request->input('OrderBarang_id');
+
+        foreach ($orderBarangIds as $orderBarangId) {
+            $orderBarang = OrderBarang::find($orderBarangId);
+            if ($orderBarang) {
+                $orderBarang->status = 'Dibuat';
+                $orderBarang->save();
+            }
+        }
+
+        return response()->json(['message' => 'OrderBarang status updated to Dibuat successfully']);
+    }
+
     public function UpdateStatusOrderProdukSelesai(Request $request)
     {
         $orderBarangIds = $request->input('OrderBarang_id');
-    
-        OrderBarang::whereIn('id', $orderBarangIds)->update(['status' => 'Selesai']);
-    
+
+        foreach ($orderBarangIds as $orderBarangId) {
+            $orderBarang = OrderBarang::find($orderBarangId);
+            if ($orderBarang) {
+                $orderBarang->status = 'Selesai';
+                $orderBarang->save();
+            }
+        }
+
         return response()->json(['message' => 'OrderBarang status updated to Selesai successfully']);
     }
 

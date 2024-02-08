@@ -24,4 +24,11 @@ class KantinFactory extends Factory
             'penjual_id' => User::factory(),
         ];
     }
+
+    public function withNama(string $nama): Factory
+    {
+        return $this->state([
+            'nama' => $nama,
+        ]);
+    }
 }

@@ -63,13 +63,17 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/order-pending', [OrderController::class, 'OrderPending'])->name('order.OrderPending');
             Route::get('/order-proses', [OrderController::class, 'OrderProses'])->name('order.OrderProses');
             Route::get('/order-selesai', [OrderController::class, 'OrderSelesai'])->name('order.OrderSelesai');
+            Route::post('/order-user-update-selesai', [OrderController::class, 'UserUpdateOrderSelesai'])->name('order.UserUpdateOrderSelesai');
             Route::post('/destroy', [OrderController::class, 'destroy'])->name('order.destroy');
         });
     });
     Route::group(['middleware' => ['role:penjual|admin']], function () {
-        Route::prefix('order')->group(function () {
+        Route::prefix('order-penjual')->group(function () {
             Route::get('/order-masuk', [OrderController::class, 'OrderPenjualMasuk'])->name('order.OrderPenjualMasuk');
-            Route::post('/order-update-status', [OrderController::class, 'UpdateStatusOrderProdukSelesai'])->name('order.UpdateStatusOrderProdukSelesai');
+            Route::get('/order-selesai', [OrderController::class, 'OrderPenjualSelesai'])->name('order.OrderPenjualSelesai');
+            Route::get('/order-cancel', [OrderController::class, 'OrderPenjualCancel'])->name('order.OrderPenjualCancel');
+            Route::post('/order-update-dibuat', [OrderController::class, 'UpdateStatusOrderProdukDibuat'])->name('order.UpdateStatusOrderProdukDibuat');
+            Route::post('/order-update-selesai', [OrderController::class, 'UpdateStatusOrderProdukSelesai'])->name('order.UpdateStatusOrderProdukSelesai');
         });
     });
     Route::prefix('keranjang')->group(function () {

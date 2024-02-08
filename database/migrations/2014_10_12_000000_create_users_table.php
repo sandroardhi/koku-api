@@ -18,7 +18,6 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('status', ['active', 'pending', 'suspended'])->default('active');            
-            $table->enum('level', ['user', 'penjual', 'admin'])->default('user');            
             $table->string('foto_profil')->nullable()->default(null);
             $table->string('nomor_hp')->nullable()->default(null);
             $table->string('deskripsi')->nullable()->default(null);
