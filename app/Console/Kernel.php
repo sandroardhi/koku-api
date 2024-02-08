@@ -15,14 +15,16 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\CancelUnconfirmedOrder::class,
+        \App\Console\Commands\KonfirmasiOrder::class,
     ];
-    
+
     /**
      * Define the application's command schedule.
      */
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('app:cancel-unconfirmed-order')->everyMinute();
+        $schedule->command('app:konfirmasi-order')->daily();
     }
 
     /**
