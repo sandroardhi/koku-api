@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\BuatOrderJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -27,58 +28,27 @@ class OrderController extends Controller
     {
         $requestData = $request->json()->all();
 
+        if ($requestData['ongkir'] >= 0) {
+            $totalHarga = $requestData['totalHarga'] + $requestData['ongkir'];
+        } else {
+            $totalHarga = $requestData['totalHarga'];
+        }
+
+        $uniqueString = Str::random(10);
+
+        $requestData['totalHarga'] = $totalHarga;
+        $requestData['unique_string'] = $uniqueString;
+
         Log::info($requestData);
 
         if ($requestData['tipePembayaran'] == 'Online') {
             DB::transaction(function () use ($requestData) {
                 $user = auth()->user();
 
-                if ($requestData['ongkir'] >= 0) {
-                    $totalHarga = $requestData['totalHarga'] + $requestData['ongkir'];
-                } else {
-                    $totalHarga = $requestData['totalHarga'];
-                }
-
-                $order = Order::create([
-                    'user_id' => $user->id,
-                    'unique_string' => Str::random(10),
-                    'total_harga' => $totalHarga,
-                    'tipe_pengiriman' => $requestData['tipePengiriman'],
-                    'tipe_pembayaran' => $requestData['tipePembayaran'],
-                    'tujuan' => $requestData['tujuan'],
-                    'catatan' => $requestData['catatan'],
-                    'ongkir' => $requestData['ongkir'],
-                    'payment_status' => 'pending',
-                ]);
-
-
-                $produkData = $requestData['produkData'];
-
-                foreach ($produkData as $barangKeranjang) {
-                    $produk = Produk::where('id', $barangKeranjang["id"])->first();
-
-                    $orderBarang = new OrderBarang([
-                        'order_id' => $order->id,
-                        'produk_id' => $produk->id,
-                        'kantin_id' => $produk->kantin_id,
-                        'nama' => $produk->nama,
-                        'foto' => $produk->foto,
-                        'harga'      => $barangKeranjang['harga'],
-                        'kuantitas'   => $barangKeranjang['pivot']['kuantitas'],
-                    ]);
-                    $order->orderBarangs()->save($orderBarang);
-
-                    $produk->update([
-                        'stok' => $produk->stok - $barangKeranjang['pivot']['kuantitas']
-                    ]);
-                }
-
-                Keranjang::destroy($requestData['keranjang_id']);
-
                 $payload = [
                     'transaction_details' => [
-                        'order_id' => $order->unique_string,
-                        'gross_amount' => $order->total_harga,
+                        'order_id' => $requestData['unique_string'],
+                        'gross_amount' => $requestData['totalHarga'],
                     ],
                     'customer_details' => [
                         'first_name' => $user->name,
@@ -88,8 +58,11 @@ class OrderController extends Controller
                 ];
 
                 $snapToken = \Midtrans\Snap::getSnapToken($payload);
-                $order->snap_token = $snapToken;
-                $order->save();
+                $requestData['snapToken'] = $snapToken;
+                $requestData['payment_status'] = 'pending';
+                
+                
+                BuatOrderJob::dispatch($requestData);
 
                 $this->response['snap_token'] = $snapToken;
             });
@@ -97,51 +70,17 @@ class OrderController extends Controller
             return response()->json([
                 'status'     => 'success',
                 'snap_token' => $this->response,
+                'message' => 'Order berhasil dibuat'
             ]);
         } else {
             DB::transaction(function () use ($requestData) {
-                $user = auth()->user();
+                $requestData['payment_status'] = 'paid';
+                BuatOrderJob::dispatch($requestData);
 
-                if ($requestData['ongkir'] >= 0) {
-                    $totalHarga = $requestData['totalHarga'] + $requestData['ongkir'];
-                } else {
-                    $totalHarga = $requestData['totalHarga'];
-                }
-
-                $order = Order::create([
-                    'user_id' => $user->id,
-                    'unique_string' => Str::random(10),
-                    'total_harga' => $totalHarga,
-                    'tipe_pengiriman' => $requestData['tipePengiriman'],
-                    'tipe_pembayaran' => $requestData['tipePembayaran'],
-                    'tujuan' => $requestData['tujuan'],
-                    'catatan' => $requestData['catatan'],
-                    'ongkir' => $requestData['ongkir'],
-                    'payment_status' => 'paid',
+                return response()->json([
+                    'status'     => 'success',
+                    'message' => 'Order berhasil dibuat'
                 ]);
-
-
-                $produkData = $requestData['produkData'];
-
-                foreach ($produkData as $barangKeranjang) {
-                    $produk = Produk::where('id', $barangKeranjang["id"])->first();
-
-                    $orderBarang = new OrderBarang([
-                        'order_id' => $order->id,
-                        'produk_id' => $produk->id,
-                        'kantin_id' => $produk->kantin_id,
-                        'nama' => $produk->nama,
-                        'foto' => $produk->foto,
-                        'harga'      => $barangKeranjang['harga'],
-                        'kuantitas'   => $barangKeranjang['pivot']['kuantitas'],
-                    ]);
-                    $order->orderBarangs()->save($orderBarang);
-
-                    $produk->update([
-                        'stok' => $produk->stok - $barangKeranjang['pivot']['kuantitas']
-                    ]);
-                }
-                Keranjang::destroy($requestData['keranjang_id']);
             });
         }
     }
@@ -181,7 +120,7 @@ class OrderController extends Controller
         return Order::with(['orderBarangs', 'user'])
             ->where('user_id', $user->id)
             ->where('payment_status', 'paid')
-            ->where('status', 'Proses')
+            ->orWhere('status', 'Proses')
             ->orWhere('status', 'Dikirim')
             ->orWhere('status', 'Konfirmasi Pembeli')
             ->orderBy('created_at', 'desc')
