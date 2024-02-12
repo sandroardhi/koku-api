@@ -28,6 +28,7 @@ class User extends Authenticatable
         'profile_picture',
         'nomor_hp',
         'deskripsi',
+        'pengantarIsAvailable',
     ];
 
     /**
@@ -60,6 +61,11 @@ class User extends Authenticatable
     }
     public function tujuans()
     {
+
         return $this->hasMany(Tujuan::class);
+    }
+    public function assignedOrders()
+    {
+        return $this->hasMany(Order::class, 'pengantar_id');
     }
 }

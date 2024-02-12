@@ -33,4 +33,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderBarang::class, 'order_id');
     }
+
+    public function pengantar(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'pengantar_id');
+    }
 }

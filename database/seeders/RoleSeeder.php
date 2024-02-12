@@ -20,12 +20,17 @@ class RoleSeeder extends Seeder
         $adminRole->syncPermissions($adminPermissions);
 
         $penjualRole = Role::create(['name' => 'penjual']);
-        $penjualPermissions = ['read-user', 'update-user', 'delete-user', 'read-kantin', 'create-kantin', 'update-kantin', 'delete-kantin', 'create-produk', 'read-produk', 'read-produk-list', 'update-produk', 'delete-produk'];;
+        $penjualPermissions = ['read-user', 'update-user', 'delete-user', 'read-kantin', 'create-kantin', 'update-kantin', 'delete-kantin', 'create-produk', 'read-produk', 'read-produk-list', 'update-produk', 'delete-produk','read-order'];
         $penjualPermissionsIds = Permission::whereIn('name', $penjualPermissions)->pluck('id')->toArray();
         $penjualRole->syncPermissions($penjualPermissionsIds);
 
+        $pengantarRole = Role::create(['name' => 'pengantar']);
+        $pengantarPermissions = ['read-user', 'update-user', 'delete-user', 'read-kantin', 'read-kategori', 'read-order'];;
+        $pengantarPermissionsIds = Permission::whereIn('name', $pengantarPermissions)->pluck('id')->toArray();
+        $pengantarRole->syncPermissions($pengantarPermissionsIds);
+
         $userRole = Role::create(['name' => 'user']);
-        $userPermissions = ['read-user', 'update-user', 'delete-user', 'read-kantin', 'read-kategori', 'read-produk'];;
+        $userPermissions = ['read-user', 'update-user', 'delete-user', 'read-kantin', 'read-kategori', 'read-produk', 'create-keranjang', 'read-keranjang', 'update-keranjang', 'delete-keranjang'];;
         $userPermissionsIds = Permission::whereIn('name', $userPermissions)->pluck('id')->toArray();
         $userRole->syncPermissions($userPermissionsIds);
     }

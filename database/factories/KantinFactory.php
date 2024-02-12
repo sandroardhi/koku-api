@@ -19,7 +19,7 @@ class KantinFactory extends Factory
     {
         return [
             'nama' => $this->faker->sentence,
-            'foto' => 'default.jpg', 
+            'foto' => 'foto_kantin/default.jpg', 
             'deskripsi' => $this->faker->paragraph,
             'penjual_id' => User::factory(),
         ];

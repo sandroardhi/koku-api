@@ -10,6 +10,7 @@ use App\Models\Produk;
 use App\Models\Keranjang;
 use App\Models\Order;
 use App\Models\OrderBarang;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -27,61 +28,137 @@ class OrderController extends Controller
     public function payAndCreateOrder(Request $request)
     {
         $requestData = $request->json()->all();
+        // check if tipePengiriman e 'Antar'
+        if ($requestData['tipePengiriman'] === 'Antar') {
+            $pengantars = User::role('pengantar')
+                ->where('pengantarIsAvailable', 'active')
+                ->get();
+            // lek pengiriman e antar, check onok pengantar active gak
+            // if ($pengantars == 'asodkjasokdjsadkoasj') {
+            if ($pengantars->count() > 0) {
+                // check lek tipe_pembayaran e 'Online'
+                if ($requestData['tipePembayaran'] == 'Online') {
+                    $requestData['pengantar'] = null;
 
-        if ($requestData['ongkir'] >= 0) {
-            $totalHarga = $requestData['totalHarga'] + $requestData['ongkir'];
-        } else {
-            $totalHarga = $requestData['totalHarga'];
+                    if ($requestData['ongkir'] >= 0) {
+                        $totalHarga = $requestData['totalHarga'] + $requestData['ongkir'];
+                    } else {
+                        $totalHarga = $requestData['totalHarga'];
+                    }
+
+                    $requestData['totalHarga'] = $totalHarga;
+                    $requestData['unique_string'] = Str::random(10);
+
+                    DB::transaction(function () use ($requestData) {
+                        $user = auth()->user();
+
+                        $payload = [
+                            'transaction_details' => [
+                                'order_id' => $requestData['unique_string'],
+                                'gross_amount' => $requestData['totalHarga'],
+                            ],
+                            'customer_details' => [
+                                'first_name' => $user->name,
+                                'email'      => $user->email,
+                                'nomor_hp'   => $user->nomor_hp,
+                            ],
+                        ];
+
+                        $snapToken = \Midtrans\Snap::getSnapToken($payload);
+                        $requestData['snapToken'] = $snapToken;
+                        $requestData['payment_status'] = 'pending';
+
+
+                        BuatOrderJob::dispatch($requestData);
+
+                        $this->response['snap_token'] = $snapToken;
+                    });
+
+                    return response()->json([
+                        'status'     => 'success',
+                        'snap_token' => $this->response,
+                        'message' => 'Order berhasil dibuat'
+                    ]);
+                }
+                // iki lek tipe_pembayaran e 'Cash' 
+                else {
+                    $requestData['pengantar'] = $pengantars->first();
+                    DB::transaction(function () use ($requestData) {
+                        $requestData['unique_string'] = Str::random(10);
+                        $requestData['payment_status'] = 'paid';
+                        BuatOrderJob::dispatch($requestData);
+
+                        return response()->json([
+                            'status'     => 'success',
+                            'message' => 'Order berhasil dibuat'
+                        ]);
+                    });
+                }
+            }
+            // lek gaonok pengantar e return 404
+            else {
+                return response()->json([
+                    'message' => 'Pengantar tidak ditemukan',
+                    'pengantars' =>  $pengantars
+                ], 404);
+            }
         }
+        // lek tipe_pengiriman e gak 'Antar'
+        else {
+            $requestData['pengantar'] = null;
+            if ($requestData['tipePembayaran'] == 'Online') {
 
-        $uniqueString = Str::random(10);
+                if ($requestData['ongkir'] >= 0) {
+                    $totalHarga = $requestData['totalHarga'] + $requestData['ongkir'];
+                } else {
+                    $totalHarga = $requestData['totalHarga'];
+                }
+                $requestData['totalHarga'] = $totalHarga;
+                $requestData['unique_string'] = Str::random(10);
 
-        $requestData['totalHarga'] = $totalHarga;
-        $requestData['unique_string'] = $uniqueString;
+                DB::transaction(function () use ($requestData) {
+                    $user = auth()->user();
 
-        Log::info($requestData);
+                    $payload = [
+                        'transaction_details' => [
+                            'order_id' => $requestData['unique_string'],
+                            'gross_amount' => $requestData['totalHarga'],
+                        ],
+                        'customer_details' => [
+                            'first_name' => $user->name,
+                            'email'      => $user->email,
+                            'nomor_hp'   => $user->nomor_hp,
+                        ],
+                    ];
 
-        if ($requestData['tipePembayaran'] == 'Online') {
-            DB::transaction(function () use ($requestData) {
-                $user = auth()->user();
+                    $snapToken = \Midtrans\Snap::getSnapToken($payload);
+                    $requestData['snapToken'] = $snapToken;
+                    $requestData['payment_status'] = 'pending';
 
-                $payload = [
-                    'transaction_details' => [
-                        'order_id' => $requestData['unique_string'],
-                        'gross_amount' => $requestData['totalHarga'],
-                    ],
-                    'customer_details' => [
-                        'first_name' => $user->name,
-                        'email'      => $user->email,
-                        'nomor_hp'   => $user->nomor_hp,
-                    ],
-                ];
 
-                $snapToken = \Midtrans\Snap::getSnapToken($payload);
-                $requestData['snapToken'] = $snapToken;
-                $requestData['payment_status'] = 'pending';
-                
-                
-                BuatOrderJob::dispatch($requestData);
+                    BuatOrderJob::dispatch($requestData);
 
-                $this->response['snap_token'] = $snapToken;
-            });
-
-            return response()->json([
-                'status'     => 'success',
-                'snap_token' => $this->response,
-                'message' => 'Order berhasil dibuat'
-            ]);
-        } else {
-            DB::transaction(function () use ($requestData) {
-                $requestData['payment_status'] = 'paid';
-                BuatOrderJob::dispatch($requestData);
+                    $this->response['snap_token'] = $snapToken;
+                });
 
                 return response()->json([
                     'status'     => 'success',
+                    'snap_token' => $this->response,
                     'message' => 'Order berhasil dibuat'
                 ]);
-            });
+            } else {
+                DB::transaction(function () use ($requestData) {
+                    $requestData['unique_string'] = Str::random(10);
+
+                    $requestData['payment_status'] = 'paid';
+                    BuatOrderJob::dispatch($requestData);
+
+                    return response()->json([
+                        'status'     => 'success',
+                        'message' => 'Order berhasil dibuat'
+                    ]);
+                });
+            }
         }
     }
 
@@ -98,11 +175,48 @@ class OrderController extends Controller
                 $order->update(['payment_status' => 'canceled']);
             }
         }
+        if ($order->tipe_pengiriman == 'Antar') {
+            $pengantars = User::role('pengantar')
+                ->where('pengantarIsAvailable', 'active')
+                ->get();
+
+            if ($pengantars->count() > 0) {
+                $pengantar = $pengantars->first();
+                $order->pengantar()->associate($pengantar)->save();
+                $pengantar->update(['pengantarIsAvailable' => 'ongoing']);
+            } else {
+                return response()->json([
+                    'message' => 'Pengantar tidak ditemukan',
+                ], 404);
+            }
+        }
     }
 
     // END OF MIDTRANS INTEGRAGITON
 
     // START OF USER'S ORDER DATA 
+    public function checkPengantar(Request $request)
+    {
+        $requestData = $request->json()->all();
+
+        $order = $requestData['order'];
+        if ($order['tipe_pengiriman'] == 'Antar') {
+            $pengantars = User::role('pengantar')
+                ->where('pengantarIsAvailable', 'active')
+                ->get();
+
+            if ($pengantars->count() > 0) {
+                return response()->json([
+                    'message' => 'Pengantar ada',
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'Pengantar tidak ditemukan',
+                ], 404);
+            }
+        }
+    }
+
     public function OrderPending()
     {
         $user = auth()->user();
@@ -224,6 +338,7 @@ class OrderController extends Controller
             ->whereHas('order', function ($query) {
                 $query->where('status', 'Canceled');
             })
+            ->orWhere('status', 'Gagal Dibuat')
             ->where('kantin_id', $kantin->id)
             ->get();
 

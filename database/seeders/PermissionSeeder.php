@@ -38,6 +38,14 @@ class PermissionSeeder extends Seeder
             'read-produk-list',
             'update-produk',
             'delete-produk',
+            'create-keranjang',
+            'read-keranjang',
+            'update-keranjang',
+            'delete-keranjang',
+            'create-order',
+            'read-order',
+            'update-order',
+            'delete-order',
         ];
 
         foreach($permissions as $permission) {

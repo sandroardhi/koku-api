@@ -64,10 +64,12 @@ class AuthenticationController extends Controller
         return response()->json(['message' => 'Berhasil logout']);
     }
 
-    public function profile(Request $request)
+    public function getUser()
     {
-        // ini cuma ngembaliin info user yang lagi login
-        return $request->user();
+        $user = auth()->user();
+        return [
+            'user' => $user,
+        ];
     }
 
     public function tujuan()
