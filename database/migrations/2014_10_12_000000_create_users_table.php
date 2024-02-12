@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('status', ['active', 'pending', 'suspended'])->default('active');            
+            $table->enum('status', ['active', 'pending', 'suspended'])->default('active');
+            $table->enum('pengantarIsAvailable', ['active', 'nonactive', 'ongoing'])->default('nonactive');
             $table->string('foto_profil')->nullable()->default(null);
             $table->string('nomor_hp')->nullable()->default(null);
             $table->string('deskripsi')->nullable()->default(null);
