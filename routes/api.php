@@ -26,6 +26,7 @@ use App\Http\Controllers\RoleController;
 Route::middleware('guest')->group(function () {
     Route::post('/auth/login', [AuthenticationController::class, 'login'])->name('auth.login');
     Route::post('/auth/register', [AuthenticationController::class, 'register'])->name('auth.register');
+    Route::post('/auth/register-penjual', [AuthenticationController::class, 'registerPenjual'])->name('auth.registerPenjual');
     Route::apiResource('kantin', KantinController::class)->only(['index', 'show']);
 });
 

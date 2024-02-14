@@ -25,6 +25,16 @@ class AuthenticationController extends Controller
                 'email' => 'Alamat email atau password salah',
             ]);
         }
+        if ($user->status == 'pending') {
+            return response()->json([
+                'message' => 'Akun belum diaktivasi, tunggu admin untuk aktivasi akun ini'
+            ], 403);
+        } elseif ($user->status == 'suspended') {
+            return response()->json([
+                'message' => 'Akun ter-suspend, anda tidak dapat login dengan akun ini'
+            ], 403);
+        }
+
         $role = $user->roles->pluck('name')->first();
 
         return [
@@ -53,6 +63,27 @@ class AuthenticationController extends Controller
 
         return $user;
     }
+
+    public function registerPenjual(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|unique:users,email|string|email',
+            'password' => 'required|confirmed'
+        ]);
+
+        $user =  User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt(($request->password)),
+            'status' => 'pending'
+        ]);
+
+        $user->assignRole('penjual');
+
+        return $user;
+    }
+
     public function logout(Request $request)
     {
         $token = $request->user()->currentAccessToken();
