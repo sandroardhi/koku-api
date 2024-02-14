@@ -98,7 +98,7 @@ class OrderController extends Controller
             // lek gaonok pengantar e return 404
             else {
                 return response()->json([
-                    'message' => 'Pengantar tidak ditemukan',
+                    'message' => 'Tidak ada pengantar yang available saat ini..',
                     'pengantars' =>  $pengantars
                 ], 404);
             }
@@ -170,24 +170,9 @@ class OrderController extends Controller
 
         if ($hashed == $request->signature_key) {
             if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
-                $order->update(['payment_status' => 'paid', 'status' => 'Menunggu Konfirmasi']);
+                $order->update(['payment_status' => 'paid']);
             } elseif ($request->transaction_status == 'expire') {
                 $order->update(['payment_status' => 'canceled']);
-            }
-        }
-        if ($order->tipe_pengiriman == 'Antar') {
-            $pengantars = User::role('pengantar')
-                ->where('pengantarIsAvailable', 'active')
-                ->get();
-
-            if ($pengantars->count() > 0) {
-                $pengantar = $pengantars->first();
-                $order->pengantar()->associate($pengantar)->save();
-                $pengantar->update(['pengantarIsAvailable' => 'ongoing']);
-            } else {
-                return response()->json([
-                    'message' => 'Pengantar tidak ditemukan',
-                ], 404);
             }
         }
     }
@@ -234,19 +219,19 @@ class OrderController extends Controller
         return Order::with(['orderBarangs', 'user'])
             ->where('user_id', $user->id)
             ->where('payment_status', 'paid')
-            ->orWhere('status', 'Proses')
-            ->orWhere('status', 'Dikirim')
-            ->orWhere('status', 'Konfirmasi Pembeli')
-            ->orderBy('created_at', 'desc')
+            ->whereNotIn('status', ['Selesai', 'Canceled'])
+            ->orWhereIn('status', ['Menunggu Konfirmasi', 'Proses', 'Dikirim', 'Konfirmasi Pembeli'])
+            ->orderByDesc('created_at')
             ->get();
     }
+
     public function OrderSelesai()
     {
         $user = auth()->user();
 
         return Order::with(['orderBarangs', 'user'])
             ->where('user_id', $user->id)
-            ->where('status', 'Selesai')
+            ->orWhereIn('status', ['Selesai', 'Canceled'])
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -294,7 +279,8 @@ class OrderController extends Controller
             ->whereHas('order', function ($query) {
                 $query->where('status', 'Menunggu Konfirmasi')
                     ->orWhere('status', 'Proses')
-                    ->orWhere('status', 'Konfirmasi Pembeli');
+                    ->orWhere('status', 'Konfirmasi Pembeli')
+                    ->orWhere('status', 'Dikirim');
             })
             ->where('kantin_id', $kantin->id)
             ->get();
