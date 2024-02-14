@@ -36,13 +36,11 @@ class CancelUnconfirmedOrder extends Command
 
         foreach ($orders as $order) {
             foreach ($order->orderBarangs as $orderBarang) {
-                // Check if the orderBarang is unconfirmed for more than 30 minutes
-                if ($orderBarang->status === 'Menunggu Konfirmasi' && now()->diffInMinutes($orderBarang->created_at) > 30) {
-                    // Update the status of the orderBarang to 'Gagal Dibuat'
-                    $orderBarang->update(['status' => 'Gagal Dibuat']);
+                if ($orderBarang->status === 'Menunggu Konfirmasi' && now()->diffInMinutes($orderBarang->created_at) > 1) {
+                    $orderBarang->status = 'Gagal Dibuat';
+                    $orderBarang->save();
 
                     Log::info('OrderBarang ' . $orderBarang->id . ' has been canceled due to unconfirmed status.');
-
                 }
             }
         }

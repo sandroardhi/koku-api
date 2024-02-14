@@ -22,27 +22,37 @@ class OrderBarangObserver
      */
     public function updated(OrderBarang $orderBarang): void
     {
+        Log::info('Updated observer triggered');
         $order = $orderBarang->order;
 
-        // Check if all OrderBarang items in the associated Order have a status of 'Selesai' or 'Gagal Dibuat'
         $allCompleted = $order->orderBarangs()->whereIn('status', ['Selesai', 'Gagal Dibuat'])->count() === $order->orderBarangs()->count();
-        // Check if all OrderBarang items in the associated Order have a status of 'Gagal Dibuat'
         $allFailed = $order->orderBarangs()->where('status', 'Gagal Dibuat')->count() === $order->orderBarangs()->count();
+        Log::info(['check all completed.', $allCompleted]);
+        Log::info(['check all failed.', $allFailed]);
 
         if ($allCompleted) {
-            // All OrderBarang items are marked 'Selesai' or 'Gagal Dibuat'
-            if ($order->tipe_pengiriman == 'Pick-up') {
-                $order->update(['status' => 'Konfirmasi Pembeli']);
+            if ($allFailed) {
+                $order->status = 'Selesai';
+                $order->save();
+                Log::info(['From inside of allFailed, check $order.', $order]);
+                if ($order->pengantar_id !== null) {
+                    $pengantar = User::find($order->pengantar_id);
+                    if ($pengantar) {
+                        $pengantar->pengantarIsAvailable = 'active';
+                        $pengantar->save();
+                        Log::info(['From inside of allFailed and $pengantar is true, check $pengantar.', $pengantar]);
+                        Log::info(['order status updated all failed.', $allFailed]);
+                    }
+                }
             } else {
-                $order->update(['status' => 'Dikirim']);
-            }
-        } elseif ($allFailed) {
-            $order->update(['status' => 'Selesai']);
-            if ($order->pengantar_id !== null) {
-                $pengantar = User::find($order->pengantar_id);
-                if ($pengantar) {
-                    $pengantar->update(['pengantarIsAvailable' => 'active']);
-                    Log::info('Pengantar status updated for orderBarang update observer.');
+                if ($order->tipe_pengiriman == 'Pick-up') {
+                    $order->status = 'Konfirmasi Pembeli';
+                    $order->save();
+                    Log::info(['From inside of allCompleted (not allFailed) tipe_pengiriman = Pick-up, check $order.', $order, 'Check allCompleted state', $allCompleted, 'Check allFailed state', $allFailed]);
+                } else {
+                    $order->status = 'Dikirim';
+                    $order->save();
+                    Log::info(['From inside of allCompleted (not allFailed) tipe_pengiriman = Antar, check $order.', $order, 'Check allCompleted state', $allCompleted, 'Check allFailed state', $allFailed]);
                 }
             }
         }

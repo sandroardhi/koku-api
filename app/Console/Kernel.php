@@ -24,7 +24,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('app:cancel-unconfirmed-order')->everyMinute();
-        $schedule->command('app:konfirmasi-order')->daily();
+        $schedule->command('app:konfirmasi-order')->dailyAt('00:00');
     }
 
     /**

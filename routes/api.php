@@ -50,7 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/create-tujuan', [AuthenticationController::class, 'create_tujuan'])->name('auth.create_tujuan');
         Route::get('/logout', [AuthenticationController::class, 'logout'])->name('auth.logout');
     });
-    Route::group(['middleware' => ['role:penjual|admin']], function () {
+    Route::group(['middleware' => ['role:penjual']], function () {
         Route::prefix('produk')->group(function () {
             Route::get('/{id}', [ProdukController::class, 'show_produk'])->name('produk.show_produk');
             Route::post('/{id}', [ProdukController::class, 'store'])->name('produk.store');
@@ -58,7 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
         });
     });
-    Route::group(['middleware' => ['role:user|admin']], function () {
+    Route::group(['middleware' => ['role:user']], function () {
         Route::prefix('order')->group(function () {
             Route::post('/pay-and-create', [OrderController::class, 'payAndCreateOrder'])->name('order.payAndCreateOrder');
             Route::get('/order-pending', [OrderController::class, 'OrderPending'])->name('order.OrderPending');
@@ -69,7 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/check-pengantar', [OrderController::class, 'checkPengantar'])->name('order.checkPengantar');
         });
     });
-    Route::group(['middleware' => ['role:penjual|admin']], function () {
+    Route::group(['middleware' => ['role:penjual']], function () {
         Route::prefix('order-penjual')->group(function () {
             Route::get('/order-masuk', [OrderController::class, 'OrderPenjualMasuk'])->name('order.OrderPenjualMasuk');
             Route::get('/order-selesai', [OrderController::class, 'OrderPenjualSelesai'])->name('order.OrderPenjualSelesai');
@@ -78,12 +78,12 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/order-update-dibuat', [OrderController::class, 'UpdateStatusOrderProdukDibuat'])->name('order.UpdateStatusOrderProdukDibuat');
         });
     });
-    Route::group(['middleware' => ['role:pengantar|admin']], function () {
+    Route::group(['middleware' => ['role:pengantar']], function () {
         Route::prefix('order-pengantar')->group(function () {
             Route::get('/order-masuk', [PengantarController::class, 'OrderPengantarMasuk'])->name('order.OrderPengantarMasuk');
             Route::get('/order-selesai', [PengantarController::class, 'OrderPengantarSelesai'])->name('order.OrderPengantarSelesai');
             Route::get('/order-cancel', [PengantarController::class, 'OrderPengantarCancel'])->name('order.OrderPengantarCancel');
-            Route::post('/order-update-selesai', [PengantarController::class, 'UpdateStatusOrderProdukSelesai'])->name('order.UpdateStatusOrderProdukSelesai');
+            Route::post('/order-update-selesai', [PengantarController::class, 'UserUpdateOrderSelesai'])->name('order.UserUpdateOrderSelesai');
             Route::post('/toggle-active', [PengantarController::class, 'togglePengantarActive'])->name('order.togglePengantarActive');
             Route::post('/toggle-nonactive', [PengantarController::class, 'togglePengantarNonactive'])->name('order.togglePengantarNonactive');
         });

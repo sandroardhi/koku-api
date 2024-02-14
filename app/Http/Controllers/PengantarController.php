@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\OrderBarang;
 use Illuminate\Http\Request;
 
@@ -30,7 +31,7 @@ class PengantarController extends Controller
         if ($pengantar->hasRole('pengantar')) {
             $assignedOrders = $pengantar->assignedOrders()
                 ->with('OrderBarangs', 'user')
-                ->whereIn('status', ['Menunggu Konfirmasi', 'Proses', 'Dikirim'])
+                ->whereIn('status', ['Menunggu Konfirmasi', 'Proses', 'Dikirim', 'Konfirmasi Pembeli'])
                 ->get();
 
             return response()->json([
@@ -49,6 +50,7 @@ class PengantarController extends Controller
 
         if ($pengantar->hasRole('pengantar')) {
             $assignedOrders = $pengantar->assignedOrders()
+                ->with('OrderBarangs', 'user')
                 ->whereIn('status', ['Selesai'])
                 ->get();
 
@@ -68,6 +70,7 @@ class PengantarController extends Controller
 
         if ($pengantar->hasRole('pengantar')) {
             $assignedOrders = $pengantar->assignedOrders()
+                ->with('OrderBarangs', 'user')
                 ->whereIn('status', ['Canceled'])
                 ->get();
 
@@ -81,18 +84,17 @@ class PengantarController extends Controller
         }
     }
 
-    public function UpdateStatusOrderProdukSelesai(Request $request)
+    public function UserUpdateOrderSelesai(Request $request)
     {
-        $orderBarangIds = $request->input('OrderBarang_id');
+        $order_id = $request->input('order_id');
+        $user = auth()->user();
+        $user->update(['pengantarIsAvailable' => 'active']);
 
-        foreach ($orderBarangIds as $orderBarangId) {
-            $orderBarang = OrderBarang::find($orderBarangId);
-            if ($orderBarang) {
-                $orderBarang->status = 'Selesai';
-                $orderBarang->save();
-            }
-        }
+        $order = Order::where('id', $order_id)->first();
 
-        return response()->json(['message' => 'OrderBarang status updated to Selesai successfully']);
+        $order->status = 'Konfirmasi Pembeli';
+        $order->save();
+
+        return response()->json(['message' => 'Order sukses diupdate']);
     }
 }

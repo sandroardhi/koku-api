@@ -51,7 +51,7 @@ class KeranjangController extends Controller
 
         if ($keranjang->produks()->where('produk_id', $produk_id)->exists()) {
             $keranjang->produks()->detach($produk_id);
-            return response()->json(['message' => 'Product removed from cart.', 'produkData' => $keranjang->produks()->withPivot('kuantitas')->get(), 'keranjang' => $keranjang]);
+            return response()->json(['message' => 'Berhasil menghapus product.', 'produkData' => $keranjang->produks()->withPivot('kuantitas')->get(), 'keranjang' => $keranjang]);
         }
 
         return response()->json(['error' => 'Product not found in the cart.'], 400);
@@ -72,7 +72,7 @@ class KeranjangController extends Controller
             if ($newKuantitas > 0) {
                 if ($newKuantitas <= $produk->stok) {
                     $keranjang->produks()->updateExistingPivot($produk->id, ['kuantitas' => DB::raw($newKuantitas)]);
-                    return response()->json(['message' => 'Kuantitas updated successfully', 'produkData' => $keranjang->produks()->withPivot('kuantitas')->get(), 'keranjang' => $keranjang]);
+                    return response()->json(['message' => 'Berhasil update kuantitas', 'produkData' => $keranjang->produks()->withPivot('kuantitas')->get(), 'keranjang' => $keranjang]);
                 } else {
                     return response()->json(['error' => 'Stok udah abis....'], 400);
                 }

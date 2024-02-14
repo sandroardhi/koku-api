@@ -39,61 +39,57 @@ class BuatOrderJob implements ShouldQueue
     public function handle(): void
     {
         $requestData = $this->requestData;
-        DB::transaction(
-            function () use ($requestData) {
 
-                $user = auth()->user();
+        $user = auth()->user();
 
-                $order = Order::create([
-                    'user_id' => $user->id,
-                    'unique_string' => $requestData['unique_string'],
-                    'total_harga' => $requestData['totalHarga'],
-                    'tipe_pengiriman' => $requestData['tipePengiriman'],
-                    'tipe_pembayaran' => $requestData['tipePembayaran'],
-                    'tujuan' => $requestData['tujuan'],
-                    'catatan' => $requestData['catatan'],
-                    'ongkir' => $requestData['ongkir'],
-                    'payment_status' => $requestData['payment_status'],
-                ]);
+        $order = Order::create([
+            'user_id' => $user->id,
+            'unique_string' => $requestData['unique_string'],
+            'total_harga' => $requestData['totalHarga'],
+            'tipe_pengiriman' => $requestData['tipePengiriman'],
+            'tipe_pembayaran' => $requestData['tipePembayaran'],
+            'tujuan' => $requestData['tujuan'],
+            'catatan' => $requestData['catatan'],
+            'ongkir' => $requestData['ongkir'],
+            'payment_status' => $requestData['payment_status'],
+        ]);
 
-                $pengantar = $requestData['pengantar'];
+        $pengantar = $requestData['pengantar'];
 
-                if ($pengantar != null) {
-                    Log::info($pengantar);
-                    $pengantar->update(['pengantarIsAvailable' => 'ongoing']);
-                    $order->pengantar()->associate($pengantar)->save();
-                } else {
-                    $order->pengantar()->dissociate()->save();
-                }
+        if ($pengantar != null) {
+            Log::info($pengantar);
+            $pengantar->update(['pengantarIsAvailable' => 'ongoing']);
+            $order->pengantar()->associate($pengantar)->save();
+        } else {
+            $order->pengantar()->dissociate()->save();
+        }
 
-                $produkData = $requestData['produkData'];
+        $produkData = $requestData['produkData'];
 
-                foreach ($produkData as $barangKeranjang) {
-                    $produk = Produk::where('id', $barangKeranjang["id"])->first();
+        foreach ($produkData as $barangKeranjang) {
+            $produk = Produk::where('id', $barangKeranjang["id"])->first();
 
-                    $orderBarang = new OrderBarang([
-                        'order_id' => $order->id,
-                        'produk_id' => $produk->id,
-                        'kantin_id' => $produk->kantin_id,
-                        'nama' => $produk->nama,
-                        'foto' => $produk->foto,
-                        'harga'      => $barangKeranjang['harga'],
-                        'kuantitas'   => $barangKeranjang['pivot']['kuantitas'],
-                    ]);
-                    $order->orderBarangs()->save($orderBarang);
+            $orderBarang = new OrderBarang([
+                'order_id' => $order->id,
+                'produk_id' => $produk->id,
+                'kantin_id' => $produk->kantin_id,
+                'nama' => $produk->nama,
+                'foto' => $produk->foto,
+                'harga'      => $barangKeranjang['harga'],
+                'kuantitas'   => $barangKeranjang['pivot']['kuantitas'],
+            ]);
+            $order->orderBarangs()->save($orderBarang);
 
-                    $produk->update([
-                        'stok' => $produk->stok - $barangKeranjang['pivot']['kuantitas']
-                    ]);
-                }
+            $produk->update([
+                'stok' => $produk->stok - $barangKeranjang['pivot']['kuantitas']
+            ]);
+        }
 
-                if (($requestData['tipePembayaran'] == 'Online')) {
-                    $order->snap_token = $requestData['snapToken'];
-                    $order->save();
-                }
+        if (($requestData['tipePembayaran'] == 'Online')) {
+            $order->snap_token = $requestData['snapToken'];
+            $order->save();
+        }
 
-                Keranjang::destroy($requestData['keranjang_id']);
-            }
-        );
+        Keranjang::destroy($requestData['keranjang_id']);
     }
 }

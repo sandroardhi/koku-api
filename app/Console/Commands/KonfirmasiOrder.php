@@ -28,7 +28,6 @@ class KonfirmasiOrder extends Command
     public function handle()
     {
         $orders = Order::where('status', 'Konfirmasi Pembeli')
-            ->where('created_at', '<=', Carbon::now()->subDay())
             ->get();
 
         foreach ($orders as $order) {

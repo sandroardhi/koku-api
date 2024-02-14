@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class Order extends Model
 {
@@ -17,6 +18,27 @@ class Order extends Model
     protected $guarded = [
         "id"
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::updated(function ($order) {
+            if ($order->payment_status == 'paid' && $order->tipe_pengiriman == 'Antar' && !$order->pengantar_id) {
+                // Log::info(['Order updated boot called']);
+                $pengantar = User::role('pengantar')
+                    ->where('pengantarIsAvailable', 'active')
+                    ->first();
+
+                if ($pengantar) {
+                    $order->pengantar()->associate($pengantar);
+                    $order->save();
+
+                    $pengantar->update(['pengantarIsAvailable' => 'ongoing']);
+                }
+            }
+        });
+    }
 
     public function getCreatedAtAttribute($value)
     {
