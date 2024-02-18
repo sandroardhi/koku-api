@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('foto_profil')->nullable()->default(null);
             $table->string('nomor_hp')->nullable()->default(null);
             $table->string('deskripsi')->nullable()->default(null);
+            $table->string('channel')->nullable()->default(null);
+            $table->string('no_rek')->nullable()->default(null);
             $table->rememberToken();
             $table->timestamps();
         });

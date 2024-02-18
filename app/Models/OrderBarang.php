@@ -29,29 +29,32 @@ class OrderBarang extends Model
             // Log::info(['check all completed.', $allCompleted]);
             // Log::info(['check all failed.', $allFailed]);
 
-            if ($allCompleted) {
-                if ($allFailed) {
-                    $order->status = 'Canceled';
-                    $order->save();
-                    // Log::info(['From inside of allFailed, check $order.', $order]);
-                    if ($order->pengantar_id !== null) {
-                        $pengantar = User::find($order->pengantar_id);
-                        if ($pengantar) {
-                            $pengantar->pengantarIsAvailable = 'active';
-                            $pengantar->save();
-                            // Log::info(['From inside of allFailed and $pengantar is true, check $pengantar.', $pengantar]);
-                            // Log::info(['order status updated all failed.', $allFailed]);
+            if($order->status !== 'Selesai')
+            {
+                if ($allCompleted) {
+                    if ($allFailed) {
+                        $order->status = 'Canceled';
+                        $order->save();
+                        // Log::info(['From inside of allFailed, check $order.', $order]);
+                        if ($order->pengantar_id !== null) {
+                            $pengantar = User::find($order->pengantar_id);
+                            if ($pengantar) {
+                                $pengantar->pengantarIsAvailable = 'active';
+                                $pengantar->save();
+                                // Log::info(['From inside of allFailed and $pengantar is true, check $pengantar.', $pengantar]);
+                                // Log::info(['order status updated all failed.', $allFailed]);
+                            }
                         }
-                    }
-                } else {
-                    if ($order->tipe_pengiriman == 'Pick-up') {
-                        $order->status = 'Konfirmasi Pembeli';
-                        $order->save();
-                        // Log::info(['From inside of allCompleted (not allFailed) tipe_pengiriman = Pick-up, check $order.', $order, 'Check allCompleted state', $allCompleted, 'Check allFailed state', $allFailed]);
                     } else {
-                        $order->status = 'Dikirim';
-                        $order->save();
-                        // Log::info(['From inside of allCompleted (not allFailed) tipe_pengiriman = Antar, check $order.', $order, 'Check allCompleted state', $allCompleted, 'Check allFailed state', $allFailed]);
+                        if ($order->tipe_pengiriman == 'Pick-up') {
+                            $order->status = 'Konfirmasi Pembeli';
+                            $order->save();
+                            // Log::info(['From inside of allCompleted (not allFailed) tipe_pengiriman = Pick-up, check $order.', $order, 'Check allCompleted state', $allCompleted, 'Check allFailed state', $allFailed]);
+                        } else {
+                            $order->status = 'Dikirim';
+                            $order->save();
+                            // Log::info(['From inside of allCompleted (not allFailed) tipe_pengiriman = Antar, check $order.', $order, 'Check allCompleted state', $allCompleted, 'Check allFailed state', $allFailed]);
+                        }
                     }
                 }
             }
@@ -70,5 +73,10 @@ class OrderBarang extends Model
     public function produk()
     {
         return $this->belongsTo(Produk::class, 'produk_id');
+    }
+
+    public function kantin()
+    {
+        return $this->belongsTo(Kantin::class, 'kantin_id');
     }
 }

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\KantinController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\KeranjangController;
 use App\Http\Controllers\OrderController;
@@ -35,6 +36,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('admin')->group(function () {
             Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
             Route::put('/user/{id}/update-role', [AdminController::class, 'update_role'])->name('admin.update-role');
+            Route::get('/uang-masuk', [DashboardController::class, 'fetchUangBelumDibayar'])->name('order.fetchUangBelumDibayar');
+            Route::get('/uang-selesai', [DashboardController::class, 'fetchUangSelesai'])->name('order.fetchUangSelesai');
+            Route::get('/uang-penjual', [DashboardController::class, 'fetchUangPenjual'])->name('order.fetchUangPenjual');
+            Route::get('/uang-pengantar', [DashboardController::class, 'fetchUangPengantar'])->name('order.fetchUangPengantar');
+            Route::put('/bayar-penjual', [DashboardController::class, 'bayarPenjual'])->name('order.bayarPenjual');
+            Route::put('/bayar-pengantar', [DashboardController::class, 'bayarPengantar'])->name('order.bayarPengantar');
         });
         Route::prefix('kategori')->group(function () {
             Route::post('/store-kategori', [KategoriController::class, 'store'])->name('kategori.store');
@@ -77,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/order-cancel', [OrderController::class, 'OrderPenjualCancel'])->name('order.OrderPenjualCancel');
             Route::post('/order-update-selesai', [OrderController::class, 'UpdateStatusOrderProdukSelesai'])->name('order.UpdateStatusOrderProdukSelesai');
             Route::post('/order-update-dibuat', [OrderController::class, 'UpdateStatusOrderProdukDibuat'])->name('order.UpdateStatusOrderProdukDibuat');
+            Route::get('/uang-masuk', [DashboardController::class, 'fetchUangMasukPenjual'])->name('order.fetchUangMasukPenjual');
         });
     });
     Route::group(['middleware' => ['role:pengantar']], function () {
@@ -87,6 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/order-update-selesai', [PengantarController::class, 'UserUpdateOrderSelesai'])->name('order.UserUpdateOrderSelesai');
             Route::post('/toggle-active', [PengantarController::class, 'togglePengantarActive'])->name('order.togglePengantarActive');
             Route::post('/toggle-nonactive', [PengantarController::class, 'togglePengantarNonactive'])->name('order.togglePengantarNonactive');
+            Route::get('/uang-masuk', [DashboardController::class, 'fetchUangMasukPengantar'])->name('order.fetchUangMasukPengantar');
         });
     });
     Route::prefix('keranjang')->group(function () {

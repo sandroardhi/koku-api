@@ -20,7 +20,9 @@ return new class extends Migration
             $table->string('foto');
             $table->double("harga");
             $table->enum('status', ['Menunggu Konfirmasi', 'Dibuat', 'Gagal Dibuat', 'Selesai'])->default('Menunggu Konfirmasi');
+            $table->enum('status_uang', ['Proses', 'Sukses', 'Gagal', 'Refund', 'Refunded', 'Selesai'])->default('Proses');
             $table->integer("kuantitas");
+            $table->string('lampiran')->nullable()->default(null);
             $table->timestamps();
         });
     }

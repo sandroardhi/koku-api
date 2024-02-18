@@ -27,7 +27,7 @@ class Produk extends Model
     {
         return $this->belongsTo(Kantin::class, "kantin_id");
     }
-    public function user(): BelongsTo
+    public function penjual(): BelongsTo
     {
         return $this->belongsTo(User::class, "penjual_id");
     }

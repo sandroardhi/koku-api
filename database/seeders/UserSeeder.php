@@ -32,24 +32,35 @@ class UserSeeder extends Seeder
             'name' => 'penjual 1',
             'email' => 'penjual1@gmail.com',
             'password' => bcrypt('password'),
+            'channel' => 'Bank BRI',
+            'no_rek' => '1234-5678-9123'
         ]);
         $penjual2 = User::factory()->create([
             'name' => 'penjual2',
             'email' => 'penjual2@gmail.com',
             'password' => bcrypt('password'),
+            'channel' => 'Bank Permata',
+            'no_rek' => '5678-3456-7890'
         ]);
         $pengantar1 = User::factory()->create([
             'name' => 'pengantar1',
             'email' => 'pengantar1@gmail.com',
             'password' => bcrypt('password'),
+            'channel' => 'Shopeepay',
+            'no_rek' => '085812345678'
         ]);
         $pengantar2 = User::factory()->create([
             'name' => 'pengantar2',
             'email' => 'pengantar2@gmail.com',
             'password' => bcrypt('password'),
+            'channel' => 'Gopay',
+            'no_rek' => '087643219876'
         ]);
         $users = User::factory(10)->create();
-        $penjuals = User::factory()->count(4)->create();
+        $penjuals = User::factory()->count(4)->create([
+            'channel' => 'Bank BNI',
+            'no_rek' => '1234-1234-1234'
+        ]);
         // end of create user
 
         // assign user's role

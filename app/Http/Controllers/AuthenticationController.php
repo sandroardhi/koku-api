@@ -69,14 +69,18 @@ class AuthenticationController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|unique:users,email|string|email',
-            'password' => 'required|confirmed'
+            'password' => 'required|confirmed',
+            'no_rek' => 'required',
+            'selectedChannel' => 'required'
         ]);
 
         $user =  User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt(($request->password)),
-            'status' => 'pending'
+            'status' => 'pending',
+            'no_rek' => $request->no_rek,
+            'channel' => $request->selectedChannel
         ]);
 
         $user->assignRole('penjual');

@@ -21,6 +21,9 @@ return new class extends Migration
             $table->double("total_harga");
             $table->enum('status', ['Menunggu Konfirmasi', 'Konfirmasi Pembeli', 'Dikirim', 'Selesai', 'Canceled'])->default('Menunggu Konfirmasi');
             $table->enum('payment_status', ['pending', 'paid', 'canceled']);
+            $table->double("ongkir");
+            $table->enum('status_ongkir', ['Proses', 'Sukses', 'Selesai', 'Gagal']);
+            $table->string('lampiran')->nullable()->default(null);
             $table->timestamps();
             $table->string('tujuan')->nullable();
             $table->text('catatan')->nullable();

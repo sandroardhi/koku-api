@@ -231,7 +231,7 @@ class OrderController extends Controller
 
         return Order::with(['orderBarangs', 'user'])
             ->where('user_id', $user->id)
-            ->orWhereIn('status', ['Selesai', 'Canceled'])
+            ->WhereIn('status', ['Selesai', 'Canceled'])
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -253,7 +253,7 @@ class OrderController extends Controller
         }
         Order::destroy($order_id);
 
-        return response()->json(['message' => 'OrderBarang status updated to Selesai successfully']);
+        return response()->json(['message' => 'Order destroyed']);
     }
 
     public function UserUpdateOrderSelesai(Request $request)
@@ -261,11 +261,13 @@ class OrderController extends Controller
         $order_id = $request->input('order_id');
 
         $order = Order::where('id', $order_id)->first();
-
+        
         $order->status = 'Selesai';
         $order->save();
 
-        return response()->json(['message' => 'OrderBarang status updated to Dibuat successfully']);
+        Log::info(['FROM UserUpdateOrderSelesai', $order->status]);
+
+        return response()->json(['message' => 'Order status updated to Selesai successfully']);
     }
     // END OF USER'S ORDER DATA 
 

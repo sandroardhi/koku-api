@@ -21,7 +21,7 @@ class Kantin extends Model
         'foto',
     ];
 
-    public function user(): BelongsTo
+    public function penjual(): BelongsTo
     {
         return $this->belongsTo(User::class, "penjual_id");
     }

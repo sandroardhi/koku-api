@@ -29,6 +29,7 @@ class User extends Authenticatable
         'nomor_hp',
         'deskripsi',
         'pengantarIsAvailable',
+        'no_rek_pembeli'
     ];
 
     /**
