@@ -113,10 +113,31 @@ class AuthenticationController extends Controller
         return  $user->tujuans;
     }
 
+    public function update_rekening(Request $request)
+    {
+        Log::info($request->all());
+        $validatedData = $request->validate([
+            'channel' => 'required',
+            'no_rek' => 'required'
+        ]);
+        $user = auth()->user();
+
+        // $user->update([
+        //     'channel' => $validatedData['channel'],
+        //     'no_rek' => $validatedData['no_rek']
+        // ]);
+
+        $user->channel = $request->channel;
+        $user->no_rek = $request->no_rek;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Berhasil meng-update rekening'
+        ]);
+    }
+
     public function create_tujuan(Request $request)
     {
-        Log::info("create tujuan ini");
-        Log::info($request->tujuan);
         $user = auth()->user();
         $request->validate([
             'tujuan' => 'required|string|max:255',

@@ -40,8 +40,10 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/uang-selesai', [DashboardController::class, 'fetchUangSelesai'])->name('order.fetchUangSelesai');
             Route::get('/uang-penjual', [DashboardController::class, 'fetchUangPenjual'])->name('order.fetchUangPenjual');
             Route::get('/uang-pengantar', [DashboardController::class, 'fetchUangPengantar'])->name('order.fetchUangPengantar');
+            Route::get('/uang-refund', [DashboardController::class, 'fetchUangRefund'])->name('order.fetchUangRefund');
             Route::put('/bayar-penjual', [DashboardController::class, 'bayarPenjual'])->name('order.bayarPenjual');
             Route::put('/bayar-pengantar', [DashboardController::class, 'bayarPengantar'])->name('order.bayarPengantar');
+            Route::put('/bayar-refund', [DashboardController::class, 'bayarRefund'])->name('order.bayarRefund');
         });
         Route::prefix('kategori')->group(function () {
             Route::post('/store-kategori', [KategoriController::class, 'store'])->name('kategori.store');
@@ -56,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/get-user', [AuthenticationController::class, 'getUser'])->name('auth.getUser');
         Route::get('/tujuan', [AuthenticationController::class, 'tujuan'])->name('auth.tujuan');
         Route::post('/create-tujuan', [AuthenticationController::class, 'create_tujuan'])->name('auth.create_tujuan');
+        Route::put('/update-rekening', [AuthenticationController::class, 'update_rekening'])->name('auth.update_rekening');
         Route::get('/logout', [AuthenticationController::class, 'logout'])->name('auth.logout');
     });
     Route::group(['middleware' => ['role:penjual']], function () {
@@ -75,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/order-user-update-selesai', [OrderController::class, 'UserUpdateOrderSelesai'])->name('order.UserUpdateOrderSelesai');
             Route::post('/destroy', [OrderController::class, 'destroy'])->name('order.destroy');
             Route::post('/check-pengantar', [OrderController::class, 'checkPengantar'])->name('order.checkPengantar');
+            Route::get('/uang-refund', [DashboardController::class, 'fetchUangRefundPembeli'])->name('order.fetchUangRefundPembeli');
         });
     });
     Route::group(['middleware' => ['role:penjual']], function () {

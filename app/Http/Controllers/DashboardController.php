@@ -18,7 +18,7 @@ class DashboardController extends Controller
             "uang_masuk" => $uang_masuk
         ]);
     }
-    // ADMIN
+
     public function fetchUangPengantar()
     {
         $uang_masuk = Order::where('status_ongkir', 'Sukses')->with('pengantar')->get();
@@ -28,9 +28,19 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function fetchUangRefund()
+    {
+        $uang_masuk = OrderBarang::where('status_uang', 'Refund')->with('order', 'order.user')->get();
+
+        return response()->json([
+            "uang_masuk" => $uang_masuk
+        ]);
+    }
+
     public function fetchUangSelesai()
     {
         $uang_selesai = OrderBarang::where('status_uang', 'Selesai')
+            ->whereNot('status', 'Gagal Dibuat')
             ->with('order', 'kantin', 'kantin.penjual')
             ->orderBy('updated_at')
             ->get()
@@ -39,8 +49,29 @@ class DashboardController extends Controller
             })
             ->values();
 
+        $uang_refunded = OrderBarang::where('status_uang', 'Refunded')
+            ->with('order', 'order.user')
+            ->orderBy('updated_at')
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->updated_at->format('Y-m-d H:i:s');
+            })
+            ->values();
+
+        $uang_ongkir_selesai = Order::where('status_ongkir', 'Selesai')
+            ->with('pengantar')
+            ->orderBy('updated_at')
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->updated_at->format('Y-m-d H:i:s');
+            })
+            ->values();
+
+
         return response()->json([
-            "uang_selesai" => $uang_selesai
+            "uang_selesai" => $uang_selesai,
+            "uang_refunded" => $uang_refunded,
+            "uang_ongkir_selesai" => $uang_ongkir_selesai
         ]);
     }
 
@@ -100,7 +131,56 @@ class DashboardController extends Controller
     }
 
 
+    public function bayarRefund(Request $request)
+    {
+        $validatedData = $request->validate([
+            'orderbarang_id' => 'required|array',
+            'foto' => 'required|image|mimes:jpeg,png,jpg,gif'
+        ]);
+
+        $orderbarangIds = is_array($validatedData['orderbarang_id']) ?
+            $validatedData['orderbarang_id'] :
+            explode(',', $validatedData['orderbarang_id']);
+
+        foreach ($orderbarangIds as $orderbarangId) {
+            $orderbarang = OrderBarang::findOrFail($orderbarangId);
+
+            $orderbarang->status_uang = 'Refunded';
+            $orderbarang->lampiran =  $request->file('foto')->store('foto_lampiran', 'public');
+
+            $orderbarang->save();
+        }
+
+        return response()->json([
+            'message' => 'Sukses membayar penjual'
+        ]);
+    }
+
+
     // END OF ADMIN
+
+    // PEMBELI
+    public function fetchUangRefundPembeli()
+    {
+        $user = auth()->user();
+        $uang_masuk = Order::where('user_id', $user->id)
+            ->whereHas('orderBarangs', function ($query) {
+                $query->where('status_uang', 'Refund')
+                    ->orWhere('status_uang', 'Refunded');
+            })
+            ->with(['orderBarangs' => function ($query) {
+                $query->where('status_uang', 'Refund')
+                    ->orWhere('status_uang', 'Refunded');
+            }])
+            ->get();
+
+        return response()->json([
+            "uang_masuk" => $uang_masuk
+        ]);
+    }
+
+
+    // END OF PEMBELI
 
     // PENJUAL
     public function fetchUangMasukPenjual()
