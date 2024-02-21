@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/uang-penjual', [DashboardController::class, 'fetchUangPenjual'])->name('order.fetchUangPenjual');
             Route::get('/uang-pengantar', [DashboardController::class, 'fetchUangPengantar'])->name('order.fetchUangPengantar');
             Route::get('/uang-refund', [DashboardController::class, 'fetchUangRefund'])->name('order.fetchUangRefund');
+            Route::get('/dashboard', [DashboardController::class, 'dashboardAdmin'])->name('order.dashboardAdmin');
             Route::put('/bayar-penjual', [DashboardController::class, 'bayarPenjual'])->name('order.bayarPenjual');
             Route::put('/bayar-pengantar', [DashboardController::class, 'bayarPengantar'])->name('order.bayarPengantar');
             Route::put('/bayar-refund', [DashboardController::class, 'bayarRefund'])->name('order.bayarRefund');

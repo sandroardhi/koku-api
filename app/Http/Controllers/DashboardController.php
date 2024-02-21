@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderBarang;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -12,7 +13,7 @@ class DashboardController extends Controller
     // ADMIN
     public function fetchUangPenjual()
     {
-        $uang_masuk = OrderBarang::where('status_uang', 'Sukses')->with('order', 'kantin', 'kantin.penjual')->get();
+        $uang_masuk = OrderBarang::where('status_uang', 'Sukses')->with('order', 'kantin', 'kantin.penjual')->orderBy('updated_at', 'desc')->get();
 
         return response()->json([
             "uang_masuk" => $uang_masuk
@@ -21,7 +22,7 @@ class DashboardController extends Controller
 
     public function fetchUangPengantar()
     {
-        $uang_masuk = Order::where('status_ongkir', 'Sukses')->with('pengantar')->get();
+        $uang_masuk = Order::where('status_ongkir', 'Sukses')->with('pengantar')->orderBy('updated_at', 'desc')->get();
 
         return response()->json([
             "uang_masuk" => $uang_masuk
@@ -30,7 +31,7 @@ class DashboardController extends Controller
 
     public function fetchUangRefund()
     {
-        $uang_masuk = OrderBarang::where('status_uang', 'Refund')->with('order', 'order.user')->get();
+        $uang_masuk = OrderBarang::where('status_uang', 'Refund')->with('order', 'order.user')->orderBy('updated_at', 'desc')->get();
 
         return response()->json([
             "uang_masuk" => $uang_masuk
@@ -42,7 +43,7 @@ class DashboardController extends Controller
         $uang_selesai = OrderBarang::where('status_uang', 'Selesai')
             ->whereNot('status', 'Gagal Dibuat')
             ->with('order', 'kantin', 'kantin.penjual')
-            ->orderBy('updated_at')
+            ->orderBy('updated_at', 'desc')
             ->get()
             ->groupBy(function ($item) {
                 return $item->updated_at->format('Y-m-d H:i:s');
@@ -51,7 +52,7 @@ class DashboardController extends Controller
 
         $uang_refunded = OrderBarang::where('status_uang', 'Refunded')
             ->with('order', 'order.user')
-            ->orderBy('updated_at')
+            ->orderBy('updated_at', 'desc')
             ->get()
             ->groupBy(function ($item) {
                 return $item->updated_at->format('Y-m-d H:i:s');
@@ -60,7 +61,7 @@ class DashboardController extends Controller
 
         $uang_ongkir_selesai = Order::where('status_ongkir', 'Selesai')
             ->with('pengantar')
-            ->orderBy('updated_at')
+            ->orderBy('updated_at', 'desc')
             ->get()
             ->groupBy(function ($item) {
                 return $item->updated_at->format('Y-m-d H:i:s');
@@ -157,6 +158,29 @@ class DashboardController extends Controller
     }
 
 
+    public function dashboardAdmin()
+    {
+        $today = Carbon::today();
+
+        $bayarPenjual = OrderBarang::whereDate('created_at', $today)
+            ->where('status_uang', 'Sukses')
+            ->sum('harga');
+
+        $bayarPengantar = Order::whereDate('created_at', $today)
+            ->where('status_ongkir', 'Sukses')
+            ->sum('ongkir');
+
+        $bayarRefund = OrderBarang::whereDate('created_at', $today)
+            ->where('status_uang', 'Refund')
+            ->sum('harga');
+
+        return [
+            'bayarPenjual' => $bayarPenjual,
+            'bayarPengantar' => $bayarPengantar,
+            'bayarRefund' => $bayarRefund
+        ];
+    }
+
     // END OF ADMIN
 
     // PEMBELI
@@ -187,7 +211,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $kantin = $user->kantin;
-        $uang_masuk = OrderBarang::where('kantin_id', $kantin->id)->whereIn('status_uang', ['Sukses', 'Selesai'])->with('order')->get();
+        $uang_masuk = OrderBarang::where('kantin_id', $kantin->id)->whereIn('status_uang', ['Sukses', 'Selesai'])->with('order')->orderBy('updated_at', 'desc')->get();
 
         return response()->json([
             "uang_masuk" => $uang_masuk
@@ -199,7 +223,7 @@ class DashboardController extends Controller
     public function fetchUangMasukPengantar()
     {
         $user = auth()->user();
-        $uang_masuk = Order::where('pengantar_id', $user->id)->whereIn('status_ongkir', ['Sukses', 'Selesai'])->get();
+        $uang_masuk = Order::where('pengantar_id', $user->id)->whereIn('status_ongkir', ['Sukses', 'Selesai'])->orderBy('updated_at', 'desc')->get();
 
         return response()->json([
             "uang_masuk" => $uang_masuk
