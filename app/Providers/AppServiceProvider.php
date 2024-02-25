@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -54,8 +56,10 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    public function boot()
     {
-        //
+        ResetPassword::createUrlUsing(function ($notifiable, string $token) {
+            return 'http://localhost:5173/reset-password/' . $token . '/' . base64_encode($notifiable->email);
+        });
     }
 }

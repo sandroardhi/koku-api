@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderBarang;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
@@ -196,13 +197,13 @@ class DashboardController extends Controller
                 $query->where('status_uang', 'Refund')
                     ->orWhere('status_uang', 'Refunded');
             }])
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return response()->json([
             "uang_masuk" => $uang_masuk
         ]);
     }
-
 
     // END OF PEMBELI
 
@@ -211,12 +212,39 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $kantin = $user->kantin;
-        $uang_masuk = OrderBarang::where('kantin_id', $kantin->id)->whereIn('status_uang', ['Sukses', 'Selesai'])->with('order')->orderBy('updated_at', 'desc')->get();
+        $uang_masuk = OrderBarang::where('kantin_id', $kantin->id)->whereIn('status_uang', ['Sukses', 'Selesai'])->with('order', 'order.user')->orderBy('updated_at', 'desc')->get();
 
         return response()->json([
             "uang_masuk" => $uang_masuk
         ]);
     }
+
+    public function dashboardPenjual()
+    {
+        $user = auth()->user();
+        $kantin = $user->kantin;
+        $today = Carbon::today();
+
+        $uangMasuk = OrderBarang::whereDate('created_at', $today)->where('kantin_id', $kantin->id)->whereIn('status_uang', ['Sukses', 'Selesai'])->sum('harga');
+
+        $produkTerjual = OrderBarang::whereDate('created_at', $today)
+            ->where('kantin_id', $kantin->id)
+            ->where('status', 'Selesai')
+            ->count();
+
+        $orderMasuk = OrderBarang::whereDate('created_at', $today)
+            ->where('kantin_id', $kantin->id)
+            ->select(DB::raw('count(distinct order_id) as unique_order_ids'))
+            ->first()
+            ->unique_order_ids;
+
+        return [
+            'uangMasuk' => $uangMasuk,
+            'produkTerjual' => $produkTerjual,
+            'orderMasuk' => $orderMasuk
+        ];
+    }
+
     // END OF PENJUAL
 
     // PENGANTAR
@@ -228,6 +256,34 @@ class DashboardController extends Controller
         return response()->json([
             "uang_masuk" => $uang_masuk
         ]);
+    }
+
+    public function dashboardPengantar()
+    {
+        $user = auth()->user();
+        $today = Carbon::today();
+
+        $uangMasuk = Order::whereDate('created_at', $today)->where('pengantar_id', $user->id)->where('status', 'Selesai')->sum('ongkir');
+
+        $mengantarOrder = Order::whereDate('created_at', $today)->where('pengantar_id', $user->id)->count();
+
+        $result = Order::whereDate('created_at', $today)
+            ->where('pengantar_id', $user->id)
+            ->selectSub(function ($query) {
+                $query->from('order_barang')
+                    ->select(DB::raw('count(*)'))
+                    ->whereColumn('order_id', 'orders.id')
+                    ->where('status', 'Selesai'); // Additional condition for status
+            }, 'order_barang_count')
+            ->first();
+
+        $mengantarProduk = $result ? $result->order_barang_count : 0;
+
+        return [
+            'uangMasuk' => $uangMasuk,
+            'mengantarOrder' => $mengantarOrder,
+            'mengantarProduk' => $mengantarProduk
+        ];
     }
     // END OF PENGANTAR
 }

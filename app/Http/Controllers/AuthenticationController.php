@@ -64,6 +64,7 @@ class AuthenticationController extends Controller
         return $user;
     }
 
+
     public function registerPenjual(Request $request)
     {
         $request->validate([
@@ -86,6 +87,29 @@ class AuthenticationController extends Controller
         $user->assignRole('penjual');
 
         return $user;
+    }
+
+    public function registerPengantar(Request $request)
+    {
+        Log::info($request->all());
+        $validatedData = $request->validate([
+            'user_id' => 'required',
+            'channel' => 'required',
+            'no_rek' => 'required'
+        ]);
+        $user = User::where('id', $request->user_id)->first();
+
+        $user->channel = $request->channel;
+        $user->no_rek = $request->no_rek;
+        $user->status = 'pending';
+        $user->save();
+
+        $user->syncRoles(['pengantar']);
+
+
+        return response()->json([
+            'message' => 'Berhasil meng-update rekening'
+        ]);
     }
 
     public function logout(Request $request)

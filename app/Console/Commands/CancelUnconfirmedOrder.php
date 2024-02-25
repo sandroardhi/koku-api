@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Order;
+use App\Models\Produk;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -36,7 +37,10 @@ class CancelUnconfirmedOrder extends Command
 
         foreach ($orders as $order) {
             foreach ($order->orderBarangs as $orderBarang) {
-                if ($orderBarang->status === 'Menunggu Konfirmasi' && now()->diffInMinutes($orderBarang->created_at) > 1) {
+                if ($orderBarang->status === 'Menunggu Konfirmasi' && now()->diffInMinutes($orderBarang->created_at) > 30) {
+                    $produk = Produk::where('id', $orderBarang->produk_id)->first();
+                    $produk->stok += $orderBarang->kuantitas;
+                    $produk->save();
                     $orderBarang->status = 'Gagal Dibuat';
                     $orderBarang->save();
 

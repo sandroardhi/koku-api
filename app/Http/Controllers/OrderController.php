@@ -236,6 +236,7 @@ class OrderController extends Controller
             ->get();
     }
 
+
     public function destroy(Request $request)
     {
         $order_id = $request->input('order_id');
@@ -261,11 +262,9 @@ class OrderController extends Controller
         $order_id = $request->input('order_id');
 
         $order = Order::where('id', $order_id)->first();
-        
+
         $order->status = 'Selesai';
         $order->save();
-
-        Log::info(['FROM UserUpdateOrderSelesai', $order->status]);
 
         return response()->json(['message' => 'Order status updated to Selesai successfully']);
     }
@@ -339,6 +338,17 @@ class OrderController extends Controller
         return $sortedGroups;
     }
 
+    public function orderMasukCount()
+    {
+        $user = auth()->user();
+
+        return Order::where('user_id', $user->id)
+            ->where('payment_status', 'paid')
+            ->whereNotIn('status', ['Selesai', 'Canceled'])
+            ->orWhereIn('status', ['Menunggu Konfirmasi', 'Proses', 'Dikirim', 'Konfirmasi Pembeli'])
+            ->count();
+    }
+
     public function UpdateStatusOrderProdukDibuat(Request $request)
     {
         $orderBarangIds = $request->input('OrderBarang_id');
@@ -370,4 +380,17 @@ class OrderController extends Controller
     }
 
     // END OF PENJUAL'S ORDER DATA
+
+    // START OF PENGANTAR ORDER DATA
+    public function orderPengantarCount()
+    {
+        $user = auth()->user();
+
+        return Order::where('pengantar_id', $user->id)
+            ->where('payment_status', 'paid')
+            ->whereNotIn('status', ['Selesai', 'Canceled'])
+            ->orWhereIn('status', ['Menunggu Konfirmasi', 'Proses', 'Dikirim', 'Konfirmasi Pembeli'])
+            ->count();
+    }
+    // END OF PENGANTAR ORDER DATA
 }
